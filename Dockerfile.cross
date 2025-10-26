@@ -1,0 +1,26 @@
+# Dockerfile pour cross-compiler vers ARM64
+FROM rust:latest
+
+# Installer les outils de cross-compilation
+RUN dpkg --add-architecture arm64 && \
+    apt-get update && \
+    apt-get install -y \
+    gcc-aarch64-linux-gnu \
+    libbluetooth-dev:arm64 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ajouter la target Rust
+RUN rustup target add aarch64-unknown-linux-gnu
+
+# Configurer le linker
+RUN mkdir -p ~/.cargo && \
+    echo '[target.aarch64-unknown-linux-gnu]' >> ~/.cargo/config.toml && \
+    echo 'linker = "aarch64-linux-gnu-gcc"' >> ~/.cargo/config.toml
+
+WORKDIR /app
+
+# Volume pour le code source
+VOLUME ["/app"]
+
+# Commande par défaut
+CMD ["cargo", "build", "--release", "--target=aarch64-unknown-linux-gnu"]

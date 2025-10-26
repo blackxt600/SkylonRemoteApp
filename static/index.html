@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Vélo Elliptique</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f1e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            animation: gradient-shift 15s ease infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, -5%); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            max-width: 1100px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Layout en grille pour tablette paysage */
+        @media (min-width: 800px) and (orientation: landscape) {
+            .container {
+                padding: 30px;
+            }
+
+            .main-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .left-column {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .right-column {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .status-panel {
+                margin-bottom: 0;
+            }
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1em;
+            letter-spacing: 0.5px;
+        }
+
+        .status-value {
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.5em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-panel {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .timer-panel {
+                margin-bottom: 0;
+                padding: 20px;
+            }
+        }
+
+        .timer-display {
+            font-size: 2.8em;
+            font-weight: 800;
+            margin-bottom: 15px;
+            font-family: 'Inter', monospace;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .timer-display {
+                font-size: 3.2em;
+                margin-bottom: 15px;
+            }
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.95);
+            color: #8b5cf6;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            background: white;
+        }
+
+        .timer-btn:active {
+            transform: translateY(0);
+        }
+
+        .timer-btn.running {
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            color: white;
+        }
+
+        .program-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .program-panel {
+                margin-bottom: 0;
+            }
+        }
+
+        .program-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .program-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .program-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1 1 calc(20% - 10px);
+            min-width: 95px;
+            font-size: 12.5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .program-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .program-btn.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .program-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .difficulty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            font-size: 1.4em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .difficulty-btn:active {
+            transform: translateY(0);
+        }
+
+        .difficulty-display {
+            text-align: center;
+            min-width: 110px;
+        }
+
+        .difficulty-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .difficulty-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .current-power-display {
+            text-align: center;
+            padding: 18px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            margin-top: 15px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+
+        .current-power-label {
+            font-size: 0.85em;
+            opacity: 0.85;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .current-power-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            font-family: 'Inter', monospace;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .current-power-unit {
+            font-size: 1.2em;
+            opacity: 0.85;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        .histogram-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .histogram-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 5px;
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.4);
+            min-width: 35px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .program-histogram {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 120px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow-x: auto;
+            flex: 1;
+            position: relative;
+        }
+
+        .program-histogram::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 10px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .histogram-bar {
+            flex: 1;
+            min-width: 8px;
+            background: linear-gradient(180deg, #8b5cf6 0%, #a78bfa 100%);
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0.25;
+        }
+
+        .histogram-bar.completed {
+            background: linear-gradient(180deg, #10b981 0%, #34d399 100%);
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .histogram-bar.current {
+            background: linear-gradient(180deg, #f59e0b 0%, #fbbf24 100%);
+            opacity: 1;
+            animation: pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scaleY(1); opacity: 1; }
+            50% { transform: scaleY(1.05); opacity: 0.9; }
+        }
+
+        .histogram-bar:hover {
+            opacity: 1;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .power-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .power-value {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .power-unit {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 75px;
+            height: 75px;
+            font-size: 1.8em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .step-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9em;
+        }
+
+        .step-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .step-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8em;
+            }
+        }
+
+        /* Bouton plein écran */
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(139, 92, 246, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
+    <div class="container">
+        <div class="main-grid">
+            <div class="left-column">
+                <div class="status-panel">
+            <div class="status-item">
+                <span class="status-label">État</span>
+                <span class="status-value" id="connection-status">🔌 Déconnecté</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">RPM</span>
+                <span class="status-value" id="rpm">-- tr/min</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Puissance</span>
+                <span class="status-value" id="power">-- W</span>
+            </div>
+        </div>
+
+                <div class="timer-panel">
+                    <div class="timer-display" id="timer">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" id="startStopBtn" onclick="toggleTimer()">▶ Démarrer</button>
+                        <button class="timer-btn" onclick="resetTimer()">↻ Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="program-panel">
+            <div class="program-title">📋 Programme d'Entraînement (30 min)</div>
+
+            <div class="program-selector">
+                <button class="program-btn active" onclick="selectProgram('none')">Manuel</button>
+                <button class="program-btn" onclick="selectProgram('plat')">Plat</button>
+                <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
+                <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
+                <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
+                <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
+                <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
+                <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                <button class="program-btn" onclick="selectProgram('changement')">Changement</button>
+                <button class="program-btn" onclick="selectProgram('altitude')">Altitude</button>
+            </div>
+
+            <div class="program-info" id="programInfo" style="display: none;">
+                <div class="difficulty-control">
+                    <button class="difficulty-btn" onclick="decreaseDifficulty()">−</button>
+                    <div class="difficulty-display">
+                        <div class="difficulty-label">Difficulté</div>
+                        <div class="difficulty-value" id="difficultyLevel">Normal</div>
+                    </div>
+                    <button class="difficulty-btn" onclick="increaseDifficulty()">+</button>
+                </div>
+
+                <div class="current-power-display">
+                    <div class="current-power-label">Puissance Active</div>
+                    <div>
+                        <span class="current-power-value" id="currentActivePower">--</span>
+                        <span class="current-power-unit">W</span>
+                    </div>
+                </div>
+
+                <div class="histogram-container">
+                    <div class="histogram-scale" id="histogramScale">
+                        <div>200</div>
+                        <div>150</div>
+                        <div>100</div>
+                        <div>50</div>
+                        <div>0</div>
+                    </div>
+                    <div class="program-histogram" id="histogram"></div>
+                </div>
+            </div>
+        </div>
+
+                <div class="control-panel" id="controlPanel">
+                    <div class="control-title">Contrôle de Puissance</div>
+
+                    <div class="power-display">
+                        <div class="power-value" id="powerControl">--</div>
+                        <div class="power-unit">Watts</div>
+                    </div>
+
+                    <div class="button-container">
+                        <button class="btn" id="decreaseBtn" onclick="decreasePower()">−</button>
+                        <button class="btn" id="increaseBtn" onclick="increasePower()">+</button>
+                    </div>
+
+                    <div class="step-controls">
+                        <button class="step-btn active" onclick="setStep(5)">+5W</button>
+                        <button class="step-btn" onclick="setStep(10)">+10W</button>
+                        <button class="step-btn" onclick="setStep(25)">+25W</button>
+                        <button class="step-btn" onclick="setStep(50)">+50W</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPower = 0;
+        let powerStep = 5;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let rpmAutoStarted = false;
+
+        // Variables des programmes d'entraînement
+        let currentProgram = 'none';
+        let programActive = false;
+        let difficultyAdjustment = 0;
+
+        // Définition des programmes (30 minutes, puissance par minute)
+        const programs = {
+            'plat': [
+                100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+                100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+                100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+            ],
+            'vallee': [
+                80, 90, 100, 110, 120, 130, 140, 150, 140, 130,
+                100, 90, 110, 130, 150, 160, 150, 130, 110, 120,
+                140, 130, 120, 110, 100, 90, 80, 70, 60, 60
+            ],
+            'collines': [
+                60, 70, 80, 90, 110, 130, 150, 170, 160, 140,
+                120, 100, 80, 70, 90, 110, 130, 150, 170, 160,
+                140, 120, 100, 80, 70, 60, 50, 50, 50, 50
+            ],
+            'montagne': [
+                60, 80, 100, 120, 140, 160, 170, 150, 130, 110,
+                90, 80, 100, 120, 140, 160, 180, 160, 140, 120,
+                100, 90, 80, 70, 60, 60, 60, 60, 60, 60
+            ],
+            'alpin': [
+                60, 70, 80, 90, 100, 110, 120, 130, 140, 150,
+                160, 170, 180, 190, 200, 200, 190, 170, 150, 130,
+                110, 100, 90, 80, 70, 60, 60, 60, 60, 60
+            ],
+            'intervalle': [
+                60, 60, 60, 180, 180, 180, 60, 60, 60, 180,
+                180, 180, 60, 60, 60, 180, 180, 180, 60, 60,
+                60, 180, 180, 180, 60, 60, 60, 60, 60, 60
+            ],
+            'pyramide': [
+                50, 60, 70, 80, 90, 100, 110, 120, 130, 140,
+                150, 160, 170, 180, 190, 180, 170, 160, 150, 140,
+                130, 120, 110, 100, 90, 80, 70, 60, 50, 50
+            ],
+            'changement': [
+                80, 90, 100, 80, 70, 90, 120, 100, 80, 110,
+                90, 80, 100, 120, 110, 90, 100, 120, 130, 110,
+                90, 100, 110, 90, 80, 90, 100, 80, 70, 60
+            ],
+            'altitude': [
+                70, 80, 90, 110, 100, 120, 140, 110, 90, 120,
+                150, 130, 110, 140, 160, 140, 120, 160, 140, 120,
+                100, 110, 130, 120, 100, 80, 70, 60, 60, 60
+            ]
+        };
+
+        // Formater le temps en HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Mettre à jour l'affichage du chronomètre
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = formatTime(timerSeconds);
+        }
+
+        // Démarrer/Arrêter le chronomètre
+        function toggleTimer() {
+            const btn = document.getElementById('startStopBtn');
+
+            if (isTimerRunning) {
+                // Arrêter le chronomètre
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isTimerRunning = false;
+                btn.textContent = '▶ Démarrer';
+                btn.classList.remove('running');
+            } else {
+                // Démarrer le chronomètre
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                    updateProgramProgress();
+                }, 1000);
+                isTimerRunning = true;
+                btn.textContent = '⏸ Arrêter';
+                btn.classList.add('running');
+            }
+        }
+
+        // Réinitialiser le chronomètre
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            isTimerRunning = false;
+            rpmAutoStarted = false;
+            updateTimerDisplay();
+            const btn = document.getElementById('startStopBtn');
+            btn.textContent = '▶ Démarrer';
+            btn.classList.remove('running');
+
+            // Réinitialiser le programme et la difficulté si un programme est actif
+            if (programActive) {
+                difficultyAdjustment = 0;
+                updateDifficultyDisplay();
+                renderHistogram();
+            }
+
+            // Réinitialiser la progression du programme
+            updateProgramProgress();
+        }
+
+        // Mettre à jour l'affichage de la puissance active
+        function updateActivePowerDisplay() {
+            if (!programActive || !programs[currentProgram]) {
+                document.getElementById('currentActivePower').textContent = '--';
+                return;
+            }
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+            if (currentMinute < 30) {
+                const basePower = programs[currentProgram][currentMinute];
+                const adjustedPower = Math.max(0, basePower + difficultyAdjustment);
+                document.getElementById('currentActivePower').textContent = adjustedPower;
+            } else {
+                document.getElementById('currentActivePower').textContent = '0';
+            }
+        }
+
+        // Augmenter la difficulté
+        function increaseDifficulty() {
+            if (!programActive) return;
+
+            difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+            updateDifficultyDisplay();
+            renderHistogram();
+            updateActivePowerDisplay();
+        }
+
+        // Diminuer la difficulté
+        function decreaseDifficulty() {
+            if (!programActive) return;
+
+            difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+            updateDifficultyDisplay();
+            renderHistogram();
+            updateActivePowerDisplay();
+        }
+
+        // Mettre à jour l'affichage de la difficulté
+        function updateDifficultyDisplay() {
+            const display = document.getElementById('difficultyLevel');
+
+            if (difficultyAdjustment > 0) {
+                display.textContent = `+${difficultyAdjustment}W`;
+                display.style.color = '#f44336';
+            } else if (difficultyAdjustment < 0) {
+                display.textContent = `${difficultyAdjustment}W`;
+                display.style.color = '#28a745';
+            } else {
+                display.textContent = 'Normal';
+                display.style.color = '#a78bfa';
+            }
+        }
+
+        // Sélectionner un programme
+        function selectProgram(program) {
+            currentProgram = program;
+            programActive = (program !== 'none');
+
+            // Mettre à jour les boutons
+            document.querySelectorAll('.program-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Afficher/masquer les infos du programme
+            const programInfo = document.getElementById('programInfo');
+            const controlPanel = document.getElementById('controlPanel');
+
+            if (programActive) {
+                programInfo.style.display = 'block';
+                controlPanel.style.display = 'none';
+                difficultyAdjustment = 0;
+                updateDifficultyDisplay();
+                renderHistogram();
+                resetTimer();
+            } else {
+                programInfo.style.display = 'none';
+                controlPanel.style.display = 'block';
+            }
+        }
+
+        // Générer l'histogramme du programme
+        function renderHistogram() {
+            if (!programActive || !programs[currentProgram]) return;
+
+            const histogram = document.getElementById('histogram');
+            histogram.innerHTML = '';
+
+            const powerValues = programs[currentProgram];
+
+            // Calculer le max avec l'ajustement de difficulté
+            const maxAdjusted = Math.max(...powerValues.map(p => Math.max(0, p + difficultyAdjustment)));
+
+            // Créer une barre pour chaque minute
+            powerValues.forEach((power, index) => {
+                const adjustedPower = Math.max(0, power + difficultyAdjustment);
+
+                const bar = document.createElement('div');
+                bar.className = 'histogram-bar';
+                bar.style.height = `${(adjustedPower / maxAdjusted) * 100}%`;
+
+                // Colorer la barre en fonction de la progression
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                }
+
+                bar.title = `Minute ${index + 1}: ${adjustedPower}W`;
+
+                histogram.appendChild(bar);
+            });
+
+            // Mettre à jour l'échelle
+            const scale = document.getElementById('histogramScale');
+            const step = Math.ceil(maxAdjusted / 4 / 10) * 10;
+            scale.innerHTML = '';
+            for (let i = 4; i >= 0; i--) {
+                const div = document.createElement('div');
+                div.textContent = step * i;
+                scale.appendChild(div);
+            }
+        }
+
+        // Mettre à jour la progression du programme
+        function updateProgramProgress() {
+            if (!programActive || currentProgram === 'none') return;
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+
+            // Mettre à jour l'affichage de la puissance active
+            updateActivePowerDisplay();
+
+            // Mettre à jour les couleurs de l'histogramme
+            const bars = document.querySelectorAll('.histogram-bar');
+            bars.forEach((bar, index) => {
+                bar.classList.remove('completed', 'current');
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                }
+            });
+
+            // Obtenir la puissance cible pour la minute actuelle
+            if (programs[currentProgram] && currentMinute < 30) {
+                const basePower = programs[currentProgram][currentMinute];
+                const adjustedPower = Math.max(0, basePower + difficultyAdjustment);
+
+                // Ajuster automatiquement la puissance si le programme est actif et le chrono tourne
+                if (isTimerRunning && currentMinute > 0) {
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // Définir la puissance
+        async function setPower(watts) {
+            try {
+                const response = await fetch(`/power/${watts}`, { method: 'POST' });
+                if (response.ok) {
+                    currentPower = watts;
+                    updateDisplay();
+                }
+            } catch (error) {
+                console.error('Erreur lors du réglage de la puissance:', error);
+            }
+        }
+
+        // Augmenter la puissance
+        async function increasePower() {
+            const newPower = Math.min(currentPower + powerStep, 250);
+            await setPower(newPower);
+        }
+
+        // Diminuer la puissance
+        async function decreasePower() {
+            const newPower = Math.max(currentPower - powerStep, 0);
+            await setPower(newPower);
+        }
+
+        // Changer le pas d'ajustement
+        function setStep(step) {
+            powerStep = step;
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            document.getElementById('power').textContent = currentPower + ' W';
+            document.getElementById('powerControl').textContent = currentPower;
+        }
+
+        // Récupérer le statut du vélo
+        async function updateStatus() {
+            try {
+                const response = await fetch('/status');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Mise à jour de l'état de connexion
+                    const connectionStatus = document.getElementById('connection-status');
+                    if (data.connected) {
+                        connectionStatus.innerHTML = '<span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);"></span>Connecté';
+                        connectionStatus.style.color = '#10b981';
+                    } else {
+                        connectionStatus.innerHTML = '<span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);"></span>Déconnecté';
+                        connectionStatus.style.color = '#ef4444';
+                    }
+
+                    document.getElementById('rpm').textContent = data.rpm + ' tr/min';
+                    currentPower = data.power;
+                    updateDisplay();
+
+                    // Auto-start/restart du chrono si RPM > 0
+                    if (data.rpm > 0 && !isTimerRunning) {
+                        toggleTimer();
+                        rpmAutoStarted = true;
+                    }
+
+                    // Auto-pause si RPM = 0 après avoir démarré
+                    if (data.rpm === 0 && rpmAutoStarted && isTimerRunning) {
+                        toggleTimer();
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération du statut:', error);
+            }
+        }
+
+        // Actualiser toutes les 500ms
+        setInterval(updateStatus, 500);
+
+        // Mode plein écran
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // Entrer en mode plein écran
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur lors du passage en plein écran: ${err.message}`);
+                });
+            } else {
+                // Sortir du mode plein écran
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Mettre à jour l'icône du bouton en fonction de l'état plein écran
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.textContent = '⛶'; // Icône "Quitter le plein écran"
+                btn.title = 'Quitter le plein écran';
+            } else {
+                btn.textContent = '⛶'; // Icône "Plein écran"
+                btn.title = 'Mode plein écran';
+            }
+        });
+
+        // Initialisation
+        updateTimerDisplay();
+        updateDisplay();
+        updateStatus();
+    </script>
+</body>
+</html>
