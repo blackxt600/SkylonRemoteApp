@@ -579,9 +579,82 @@
         .fullscreen-btn:active {
             transform: scale(0.95);
         }
+
+        /* Date et heure en haut à gauche */
+        .datetime-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .datetime-day {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .datetime-date {
+            font-weight: 600;
+        }
+
+        .datetime-time {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Graphique RPM */
+        .rpm-chart-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rpm-chart-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .rpm-chart-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #rpmChart {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div class="datetime-display" id="datetimeDisplay">
+        <div class="datetime-day" id="datetimeDay">Lundi</div>
+        <div class="datetime-date" id="datetimeDate">26 janvier 2025</div>
+        <div class="datetime-time" id="datetimeTime">14:30:00</div>
+    </div>
     <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
     <div class="container">
         <div class="main-grid">
@@ -606,6 +679,13 @@
                     <div class="timer-controls">
                         <button class="timer-btn" id="startStopBtn" onclick="toggleTimer()">▶ Démarrer</button>
                         <button class="timer-btn" onclick="resetTimer()">↻ Réinitialiser</button>
+                    </div>
+                </div>
+
+                <div class="rpm-chart-panel">
+                    <div class="rpm-chart-title">📊 Évolution du RPM</div>
+                    <div class="rpm-chart-container">
+                        <canvas id="rpmChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -689,6 +769,12 @@
         let timerInterval = null;
         let isTimerRunning = false;
         let rpmAutoStarted = false;
+
+        // Variables pour le graphique RPM
+        let rpmHistory = [];
+        const MAX_RPM_HISTORY = 60; // 60 secondes d'historique
+        let rpmChart = null;
+        let rpmChartCtx = null;
 
         // Variables des programmes d'entraînement
         let currentProgram = 'none';
@@ -1001,6 +1087,139 @@
             document.getElementById('powerControl').textContent = currentPower;
         }
 
+        // Initialiser le graphique RPM
+        function initRpmChart() {
+            rpmChart = document.getElementById('rpmChart');
+            if (!rpmChart) return;
+
+            rpmChartCtx = rpmChart.getContext('2d');
+
+            // Définir la taille du canvas
+            const container = rpmChart.parentElement;
+            rpmChart.width = container.clientWidth;
+            rpmChart.height = container.clientHeight;
+
+            // Initialiser l'historique avec des zéros
+            rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+
+            drawRpmChart();
+        }
+
+        // Dessiner le graphique RPM
+        function drawRpmChart() {
+            if (!rpmChartCtx || !rpmChart) return;
+
+            const width = rpmChart.width;
+            const height = rpmChart.height;
+            const padding = 40;
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+
+            // Effacer le canvas
+            rpmChartCtx.clearRect(0, 0, width, height);
+
+            // Trouver le maximum pour l'échelle
+            const maxRpm = Math.max(...rpmHistory, 100); // Minimum 100 pour l'échelle
+            const roundedMax = Math.ceil(maxRpm / 20) * 20; // Arrondir au 20 supérieur
+
+            // Dessiner le fond de la grille
+            rpmChartCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            rpmChartCtx.lineWidth = 1;
+
+            // Lignes horizontales de la grille
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight * i) / 4;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.moveTo(padding, y);
+                rpmChartCtx.lineTo(width - padding, y);
+                rpmChartCtx.stroke();
+
+                // Étiquettes de l'axe Y
+                const value = roundedMax - (roundedMax * i) / 4;
+                rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                rpmChartCtx.font = '11px Inter';
+                rpmChartCtx.textAlign = 'right';
+                rpmChartCtx.fillText(Math.round(value), padding - 10, y + 4);
+            }
+
+            // Dessiner la courbe RPM
+            if (rpmHistory.length > 0) {
+                const pointSpacing = chartWidth / (MAX_RPM_HISTORY - 1);
+
+                // Dessiner l'aire sous la courbe (gradient)
+                const gradient = rpmChartCtx.createLinearGradient(0, padding, 0, height - padding);
+                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+                gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+
+                rpmChartCtx.fillStyle = gradient;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.moveTo(padding, height - padding);
+
+                for (let i = 0; i < rpmHistory.length; i++) {
+                    const x = padding + i * pointSpacing;
+                    const y = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    if (i === 0) {
+                        rpmChartCtx.lineTo(x, y);
+                    } else {
+                        rpmChartCtx.lineTo(x, y);
+                    }
+                }
+
+                rpmChartCtx.lineTo(width - padding, height - padding);
+                rpmChartCtx.closePath();
+                rpmChartCtx.fill();
+
+                // Dessiner la ligne
+                rpmChartCtx.strokeStyle = 'rgba(167, 139, 250, 1)';
+                rpmChartCtx.lineWidth = 2.5;
+                rpmChartCtx.beginPath();
+
+                for (let i = 0; i < rpmHistory.length; i++) {
+                    const x = padding + i * pointSpacing;
+                    const y = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    if (i === 0) {
+                        rpmChartCtx.moveTo(x, y);
+                    } else {
+                        rpmChartCtx.lineTo(x, y);
+                    }
+                }
+
+                rpmChartCtx.stroke();
+
+                // Dessiner un point au dernier point de données
+                const lastX = padding + (rpmHistory.length - 1) * pointSpacing;
+                const lastY = height - padding - (rpmHistory[rpmHistory.length - 1] / roundedMax) * chartHeight;
+
+                rpmChartCtx.fillStyle = 'rgba(167, 139, 250, 1)';
+                rpmChartCtx.beginPath();
+                rpmChartCtx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+                rpmChartCtx.fill();
+
+                // Cercle extérieur animé
+                rpmChartCtx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
+                rpmChartCtx.lineWidth = 2;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+                rpmChartCtx.stroke();
+            }
+
+            // Étiquettes des axes
+            rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            rpmChartCtx.font = '10px Inter';
+            rpmChartCtx.textAlign = 'center';
+            rpmChartCtx.fillText('60s', padding + 5, height - 5);
+            rpmChartCtx.fillText('0s', width - padding - 5, height - 5);
+        }
+
+        // Ajouter une valeur RPM à l'historique
+        function addRpmToHistory(rpm) {
+            rpmHistory.push(rpm);
+            if (rpmHistory.length > MAX_RPM_HISTORY) {
+                rpmHistory.shift();
+            }
+            drawRpmChart();
+        }
+
         // Récupérer le statut du vélo
         async function updateStatus() {
             try {
@@ -1021,6 +1240,9 @@
                     document.getElementById('rpm').textContent = data.rpm + ' tr/min';
                     currentPower = data.power;
                     updateDisplay();
+
+                    // Ajouter le RPM à l'historique du graphique
+                    addRpmToHistory(data.rpm);
 
                     // Auto-start/restart du chrono si RPM > 0
                     if (data.rpm > 0 && !isTimerRunning) {
@@ -1068,10 +1290,52 @@
             }
         });
 
+        // Mettre à jour la date et l'heure
+        function updateDateTime() {
+            const now = new Date();
+
+            // Jours de la semaine en français
+            const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                         'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+            // Jour de la semaine
+            const jour = jours[now.getDay()];
+
+            // Date formatée
+            const date = `${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()}`;
+
+            // Heure formatée
+            const heures = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const secondes = String(now.getSeconds()).padStart(2, '0');
+            const heure = `${heures}:${minutes}:${secondes}`;
+
+            // Mise à jour de l'affichage
+            document.getElementById('datetimeDay').textContent = jour;
+            document.getElementById('datetimeDate').textContent = date;
+            document.getElementById('datetimeTime').textContent = heure;
+        }
+
+        // Mettre à jour la date/heure toutes les secondes
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
         // Initialisation
         updateTimerDisplay();
         updateDisplay();
         updateStatus();
+        initRpmChart();
+
+        // Redimensionner le graphique si la fenêtre change de taille
+        window.addEventListener('resize', () => {
+            if (rpmChart && rpmChartCtx) {
+                const container = rpmChart.parentElement;
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                drawRpmChart();
+            }
+        });
     </script>
 </body>
 </html>
