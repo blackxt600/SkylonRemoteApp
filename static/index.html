@@ -952,6 +952,16 @@
         let rpmChartCtx = null;
         let targetRpm = 60; // RPM de référence par défaut
 
+        // Variables pour les statistiques du programme
+        let programStats = {
+            active: false,
+            startTime: null,
+            rpmSamples: [],
+            rpmAboveTarget: 0,
+            rpmBelowTarget: 0,
+            totalSamples: 0
+        };
+
         // Charger le RPM cible depuis localStorage
         function loadTargetRpm() {
             const saved = localStorage.getItem('targetRpm');
@@ -982,6 +992,237 @@
             document.getElementById('targetRpmDisplay').textContent = targetRpm;
             saveTargetRpm();
             drawRpmChart();
+        }
+
+        // Démarrer la collecte de statistiques
+        function startProgramStats() {
+            programStats = {
+                active: true,
+                startTime: Date.now(),
+                rpmSamples: [],
+                rpmAboveTarget: 0,
+                rpmBelowTarget: 0,
+                totalSamples: 0
+            };
+        }
+
+        // Arrêter la collecte et afficher la synthèse
+        function stopProgramStats() {
+            if (!programStats.active) return;
+            programStats.active = false;
+            showProgramSummary();
+        }
+
+        // Enregistrer un échantillon RPM
+        function recordRpmSample(rpm) {
+            if (!programStats.active || !programActive) return;
+
+            programStats.rpmSamples.push(rpm);
+            programStats.totalSamples++;
+
+            if (rpm >= targetRpm) {
+                programStats.rpmAboveTarget++;
+            } else {
+                programStats.rpmBelowTarget++;
+            }
+        }
+
+        // Afficher la synthèse du programme
+        function showProgramSummary() {
+            if (programStats.totalSamples === 0) return;
+
+            // Calculer les statistiques
+            const avgRpm = programStats.rpmSamples.reduce((a, b) => a + b, 0) / programStats.totalSamples;
+            const percentAbove = (programStats.rpmAboveTarget / programStats.totalSamples) * 100;
+            const percentBelow = (programStats.rpmBelowTarget / programStats.totalSamples) * 100;
+            const duration = Math.floor((Date.now() - programStats.startTime) / 1000);
+            const durationMin = Math.floor(duration / 60);
+            const durationSec = duration % 60;
+
+            // Créer la modal
+            const modal = document.createElement('div');
+            modal.id = 'summaryModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 40px;
+                    max-width: 600px;
+                    width: 90%;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                ">
+                    <h2 style="
+                        color: #a78bfa;
+                        text-align: center;
+                        margin-bottom: 30px;
+                        font-size: 2em;
+                        font-weight: 800;
+                    ">🎉 Programme Terminé !</h2>
+
+                    <div style="
+                        background: rgba(255, 255, 255, 0.03);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 16px;
+                        padding: 25px;
+                        margin-bottom: 25px;
+                    ">
+                        <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 1.3em;">📊 Statistiques</h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div style="text-align: center; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85em; margin-bottom: 5px;">RPM Moyen</div>
+                                <div style="color: #a78bfa; font-size: 2em; font-weight: 700;">${Math.round(avgRpm)}</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85em; margin-bottom: 5px;">Durée</div>
+                                <div style="color: #a78bfa; font-size: 2em; font-weight: 700;">${durationMin}m ${durationSec}s</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: rgba(255, 255, 255, 0.7);">Seuil: ${targetRpm} RPM</span>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span style="color: #22c55e; font-weight: 600;">✓ Au-dessus</span>
+                                    <span style="color: #22c55e; font-weight: 700;">${percentAbove.toFixed(1)}%</span>
+                                </div>
+                                <div style="height: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; display: flex;">
+                                    <div style="
+                                        width: ${percentAbove}%;
+                                        background: linear-gradient(90deg, #22c55e, #10b981);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: 600;
+                                        font-size: 0.85em;
+                                    ">${percentAbove > 10 ? Math.round(percentAbove) + '%' : ''}</div>
+                                    <div style="
+                                        width: ${percentBelow}%;
+                                        background: linear-gradient(90deg, #ef4444, #dc2626);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: 600;
+                                        font-size: 0.85em;
+                                    ">${percentBelow > 10 ? Math.round(percentBelow) + '%' : ''}</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <span style="color: #ef4444; font-weight: 600;">✗ En dessous</span>
+                                    <span style="color: #ef4444; font-weight: 700;">${percentBelow.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <canvas id="summaryChart" style="width: 100%; height: 150px; margin-top: 20px;"></canvas>
+                    </div>
+
+                    <button onclick="closeSummary()" style="
+                        width: 100%;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                        border: none;
+                        border-radius: 12px;
+                        color: white;
+                        font-size: 1.1em;
+                        font-weight: 700;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        Fermer
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Dessiner le graphique de distribution RPM
+            setTimeout(() => drawSummaryChart(programStats.rpmSamples), 100);
+        }
+
+        // Dessiner le graphique de distribution dans la synthèse
+        function drawSummaryChart(rpmSamples) {
+            const canvas = document.getElementById('summaryChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Créer un histogramme de distribution
+            const bins = 10;
+            const maxRpm = Math.max(...rpmSamples);
+            const minRpm = Math.min(...rpmSamples);
+            const binSize = (maxRpm - minRpm) / bins;
+            const distribution = new Array(bins).fill(0);
+
+            rpmSamples.forEach(rpm => {
+                const binIndex = Math.min(Math.floor((rpm - minRpm) / binSize), bins - 1);
+                distribution[binIndex]++;
+            });
+
+            const maxCount = Math.max(...distribution);
+            const barWidth = width / bins;
+            const padding = 10;
+
+            // Dessiner les barres
+            distribution.forEach((count, i) => {
+                const barHeight = (count / maxCount) * (height - padding * 2);
+                const x = i * barWidth;
+                const y = height - padding - barHeight;
+                const binRpm = minRpm + (i + 0.5) * binSize;
+                const color = binRpm >= targetRpm ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+
+                // Bordure
+                ctx.strokeStyle = binRpm >= targetRpm ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x + 2, y, barWidth - 4, barHeight);
+            });
+
+            // Ligne de seuil
+            const targetX = ((targetRpm - minRpm) / (maxRpm - minRpm)) * width;
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(targetX, 0);
+            ctx.lineTo(targetX, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Fermer la modal de synthèse
+        function closeSummary() {
+            const modal = document.getElementById('summaryModal');
+            if (modal) {
+                modal.remove();
+            }
         }
 
         // Variables des programmes d'entraînement
@@ -1121,6 +1362,16 @@
                     timerSeconds++;
                     updateTimerDisplay();
                     updateProgramProgress();
+
+                    // Vérifier si le programme est terminé (30 minutes = 1800 secondes)
+                    if (programActive && timerSeconds >= 1800) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isTimerRunning = false;
+                        btn.textContent = '▶ Démarrer';
+                        btn.classList.remove('running');
+                        stopProgramStats(); // Afficher la synthèse
+                    }
                 }, 1000);
                 isTimerRunning = true;
                 btn.textContent = '⏸ Arrêter';
@@ -1226,6 +1477,7 @@
                 updateDifficultyDisplay();
                 renderHistogram();
                 resetTimer();
+                startProgramStats(); // Démarrer la collecte de statistiques
             } else {
                 programInfo.style.display = 'none';
                 controlPanel.style.display = 'block';
@@ -1526,6 +1778,9 @@
 
                     // Ajouter le RPM à l'historique du graphique
                     addRpmToHistory(data.rpm);
+
+                    // Enregistrer le RPM pour les statistiques du programme
+                    recordRpmSample(data.rpm);
 
                     // Auto-start/restart du chrono si RPM > 0
                     if (data.rpm > 0 && !isTimerRunning) {

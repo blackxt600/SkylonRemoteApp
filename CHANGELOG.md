@@ -5,6 +5,47 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.6.0] - 2025-11-09
+
+### Ajouté
+- **Synthèse statistique automatique en fin de programme**
+  - Modal affichée automatiquement à la fin des 30 minutes
+  - **Statistiques affichées** :
+    - RPM moyen pendant tout le programme
+    - Durée réelle d'exécution (minutes + secondes)
+    - Pourcentage de temps au-dessus du seuil RPM (en vert)
+    - Pourcentage de temps en-dessous du seuil RPM (en rouge)
+  - **Barre de progression colorée** :
+    - Section verte : temps au-dessus du seuil
+    - Section rouge : temps en-dessous du seuil
+    - Pourcentages affichés dans les barres
+  - **Histogramme de distribution RPM** :
+    - 10 barres représentant la répartition des RPM
+    - Coloration conditionnelle (vert/rouge selon le seuil)
+    - Ligne de seuil jaune en pointillés
+  - Design glassmorphisme cohérent avec l'interface
+  - Bouton "Fermer" pour revenir à l'interface principale
+
+### Modifié
+- **Collecte automatique des données RPM**
+  - Enregistrement de chaque échantillon RPM (toutes les 500ms)
+  - Compteurs automatiques pour temps au-dessus/en-dessous du seuil
+  - Démarrage automatique lors de la sélection d'un programme
+- **Détection de fin de programme**
+  - Arrêt automatique du chronomètre à 30 minutes (1800 secondes)
+  - Déclenchement immédiat de l'affichage de la synthèse
+  - Arrêt de la collecte de statistiques
+
+### Technique
+- `static/index.html` : +255 lignes
+  - Structure `programStats` pour stocker les données de session
+  - Fonctions `startProgramStats()`, `stopProgramStats()`, `recordRpmSample()`
+  - Fonction `showProgramSummary()` pour créer la modal dynamiquement
+  - Fonction `drawSummaryChart()` pour dessiner l'histogramme de distribution
+  - Fonction `closeSummary()` pour fermer la modal
+  - Intégration dans le timer : détection automatique de fin à 1800s
+  - Enregistrement RPM dans `updateStatus()` via `recordRpmSample()`
+
 ## [1.5.0] - 2025-11-09
 
 ### Ajouté
