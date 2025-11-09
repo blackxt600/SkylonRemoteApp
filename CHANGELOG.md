@@ -5,6 +5,96 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.3.0] - 2025-11-09
+
+### Ajouté
+- **Boutons de gestion système** dans l'interface web
+  - Bouton **Éteindre** (🔴 rouge) pour arrêt complet du Raspberry Pi
+  - Bouton **Redémarrer** (🔄 orange) pour redémarrage du système
+  - Positionnés en bas à gauche de l'écran
+  - Animations et effets visuels (hover, scale)
+  - Confirmations de sécurité avant chaque action
+- **Nouveaux endpoints API REST**
+  - `POST /system/shutdown` - Arrête le Raspberry Pi (`shutdown -h now`)
+  - `POST /system/reboot` - Redémarre le Raspberry Pi (`reboot`)
+  - Délai de 2 secondes pour permettre l'envoi de la réponse HTTP
+- **Documentation complète**
+  - `SYSTEME_SHUTDOWN_REBOOT.md` - Guide de configuration sudo
+  - Instructions pas à pas pour autoriser les commandes sans mot de passe
+  - Section dépannage et sécurité
+  - Conseils pour améliorer la sécurité avec un utilisateur dédié
+
+### Modifié
+- Interface web (static/index.html)
+  - Ajout des fonctions JavaScript `confirmShutdown()` et `confirmReboot()`
+  - Nouveaux styles CSS pour les boutons système
+- Backend (src/main.rs)
+  - Import de `std::process::Command` pour exécution des commandes système
+  - Enregistrement des nouveaux endpoints dans le serveur HTTP
+
+### Sécurité
+- Les commandes système nécessitent une configuration sudo appropriée
+- Confirmations doubles (dialogue de confirmation + message d'alerte)
+- Documentation des bonnes pratiques de sécurité
+
+## [1.2.0] - 2025-11-09
+
+### Ajouté
+- **Système complet de programmes d'entraînement personnalisés**
+  - Structure `TrainingProgram` pour définir des programmes par intervalles
+  - Intervalles configurables avec puissance cible et durée
+  - Noms optionnels pour chaque intervalle
+- **API REST complète pour la gestion des programmes**
+  - `POST /program` - Créer un nouveau programme
+  - `GET /programs` - Lister tous les programmes
+  - `GET /program/{id}` - Obtenir un programme spécifique
+  - `PUT /program/{id}` - Mettre à jour un programme
+  - `DELETE /program/{id}` - Supprimer un programme
+  - `POST /program/{id}/start` - Démarrer un programme
+  - `POST /program/stop` - Arrêter le programme en cours
+  - `GET /program/active` - Obtenir l'état du programme actif
+- **Exécution automatique des programmes**
+  - Changement de puissance en temps réel selon les intervalles
+  - Suivi de la progression (pourcentage, temps écoulé)
+  - Arrêt automatique en fin de programme
+- **Interface web pour gérer les programmes**
+  - `static/programs.html` - Page de gestion des programmes
+  - Bouton d'accès dans l'interface principale (📋 Programmes)
+  - Création, modification, suppression de programmes
+  - Visualisation de la progression en temps réel
+- **Scripts de démarrage automatique**
+  - `autostart/startup-command.service` - Service systemd
+  - `autostart/launch_terminal.sh` - Script de lancement
+  - Documentation d'installation dans `autostart/README_installation.md`
+- **Documentation**
+  - `PROGRAMME_ENTRAINEMENT.md` - Guide complet du système de programmes
+
+### Modifié
+- **BikeController** (src/bike_controller.rs)
+  - Ajout du stockage des programmes (`HashMap<String, TrainingProgram>`)
+  - État d'exécution du programme actif (`ProgramExecutionState`)
+  - Boucle de mise à jour toutes les secondes pour avancer dans le programme
+  - Méthodes de gestion : create, update, delete, list, get, start, stop
+- **Amélioration de la robustesse de connexion Bluetooth**
+  - 5 tentatives de scan au lieu de 3
+  - Backoff exponentiel entre les tentatives (2, 4, 8, 16 secondes)
+  - Meilleurs messages de diagnostic
+  - Nettoyage de l'ancienne connexion avant reconnexion
+  - Délai de stabilisation après détection de l'appareil
+  - Double tentative de connexion si la première échoue
+
+### Fixé
+- Gestion des erreurs de scan Bluetooth plus robuste
+- Libération correcte des ressources Bluetooth lors de la reconnexion
+
+## [1.1.0] - 2025-11-09
+
+### Ajouté
+- **Graphique d'évolution du RPM en temps réel**
+  - Affichage visuel de l'historique des performances
+  - Canvas avec tracé dynamique
+  - Mise à jour automatique toutes les secondes
+
 ## [1.0.0] - 2025-01-26
 
 ### Ajouté
