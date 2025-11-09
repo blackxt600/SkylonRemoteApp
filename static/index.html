@@ -598,6 +598,39 @@
             line-height: 1.4;
         }
 
+        /* Bouton programmes personnalisés */
+        .programs-btn {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .programs-btn:hover {
+            background: rgba(139, 92, 246, 1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .programs-btn:active {
+            transform: scale(0.98);
+        }
+
         .datetime-day {
             font-size: 0.9em;
             opacity: 0.9;
@@ -655,6 +688,10 @@
         <div class="datetime-date" id="datetimeDate">26 janvier 2025</div>
         <div class="datetime-time" id="datetimeTime">14:30:00</div>
     </div>
+    <a href="/programs.html" class="programs-btn" title="Programmes d'entraînement personnalisés">
+        <span>📋</span>
+        <span>Programmes</span>
+    </a>
     <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
     <div class="container">
         <div class="main-grid">

@@ -1,0 +1,14 @@
+[Unit]
+Description=Elliptical Server (Rust Cargo) au démarrage
+After=graphical.target
+
+[Service]
+Type=simple
+User=skylon
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/skylon/.Xauthority
+ExecStart=/home/skylon/launch_terminal.sh
+Restart=on-failure
+
+[Install]
+WantedBy=graphical.target

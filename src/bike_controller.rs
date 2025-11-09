@@ -1,8 +1,10 @@
 use kdri::{KettlerConnection, scan_devices};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::collections::HashMap;
 use tokio::time;
 use anyhow::{Result, bail};
+use crate::training_program::{TrainingProgram, ProgramExecutionState};
 
 #[derive(Debug, Clone)]
 pub struct BikeData {
@@ -16,6 +18,10 @@ pub struct BikeController {
     connection: Arc<Mutex<Option<KettlerConnection>>>,
     data: Arc<Mutex<BikeData>>,
     reconnect_attempts: Arc<Mutex<u32>>,
+    // Stockage des programmes d'entraînement
+    programs: Arc<Mutex<HashMap<String, TrainingProgram>>>,
+    // État du programme en cours d'exécution
+    active_program: Arc<Mutex<Option<ProgramExecutionState>>>,
 }
 
 impl BikeController {
@@ -32,6 +38,8 @@ impl BikeController {
             connection: Arc::new(Mutex::new(None)),
             data: Arc::new(Mutex::new(data)),
             reconnect_attempts: Arc::new(Mutex::new(0)),
+            programs: Arc::new(Mutex::new(HashMap::new())),
+            active_program: Arc::new(Mutex::new(None)),
         });
 
         // Lancer la tentative de connexion en arrière-plan
@@ -45,27 +53,34 @@ impl BikeController {
 
     async fn try_initial_connection(&self) {
         println!("🔍 Recherche d'appareils Kettler...");
+        println!("💡 Assurez-vous que le vélo est allumé et en mode Bluetooth");
 
-        for attempt in 1..=3 {
+        // Tentatives initiales avec backoff exponentiel
+        let max_attempts = 5;
+        for attempt in 1..=max_attempts {
+            // Délai avec backoff exponentiel : 2, 4, 8, 16 secondes
+            if attempt > 1 {
+                let delay = 2u64.pow(attempt - 2);
+                println!("⏳ Attente de {} secondes avant nouvelle tentative...", delay);
+                tokio::time::sleep(Duration::from_secs(delay)).await;
+            }
+
             match self.attempt_connection().await {
                 Ok(_) => {
-                    println!("✅ Connecté avec succès !");
+                    println!("✅ Connecté avec succès après {} tentative(s) !", attempt);
                     return;
                 }
                 Err(e) => {
-                    eprintln!("⚠️  Tentative {}/3 échouée : {:?}", attempt, e);
-                    if attempt < 3 {
-                        println!("🔄 Nouvelle tentative dans 3 secondes...");
-                        tokio::time::sleep(Duration::from_secs(3)).await;
-                    }
+                    eprintln!("⚠️  Tentative {}/{} échouée : {:?}", attempt, max_attempts, e);
                 }
             }
         }
 
         println!("⚠️  Impossible de se connecter pour le moment.");
         println!("   Le serveur continue de fonctionner. Réessai automatique toutes les 30 secondes...");
+        println!("   Vérifiez que le vélo est allumé et en mode Bluetooth.");
 
-        // Continuer à essayer en arrière-plan
+        // Continuer à essayer en arrière-plan avec backoff
         let controller = self;
         loop {
             tokio::time::sleep(Duration::from_secs(30)).await;
@@ -78,14 +93,74 @@ impl BikeController {
     }
 
     async fn attempt_connection(&self) -> Result<()> {
+        // Nettoyer l'ancienne connexion si elle existe
+        {
+            let mut conn = self.connection.lock().unwrap();
+            if conn.is_some() {
+                println!("🧹 Nettoyage de l'ancienne connexion...");
+                *conn = None;
+                // Laisser le temps au Bluetooth de se libérer
+                drop(conn);
+                std::thread::sleep(Duration::from_millis(500));
+            }
+        }
+
         let connection = Arc::clone(&self.connection);
 
         let new_conn = tokio::task::spawn_blocking(move || {
-            let devices = scan_devices().map_err(|e| anyhow::anyhow!("Scan failed: {:?}", e))?;
+            // Essayer plusieurs scans si nécessaire
+            let mut devices = Vec::new();
+            let max_scan_attempts = 5; // Augmenté de 3 à 5
+
+            for scan_attempt in 1..=max_scan_attempts {
+                println!("🔍 Scan Bluetooth {}/{}...", scan_attempt, max_scan_attempts);
+
+                // Délai progressif avant chaque scan (sauf le premier)
+                if scan_attempt > 1 {
+                    let delay = 3 + (scan_attempt - 1); // 3, 4, 5, 6 secondes
+                    println!("   Attente de {} secondes avant le scan...", delay);
+                    std::thread::sleep(Duration::from_secs(delay as u64));
+                }
+
+                match scan_devices() {
+                    Ok(found_devices) => {
+                        if !found_devices.is_empty() {
+                            devices = found_devices;
+                            println!("✓ {} appareil(s) Kettler détecté(s)", devices.len());
+                            break;
+                        } else {
+                            println!("⚠️  Aucun appareil trouvé lors du scan {}/{}", scan_attempt, max_scan_attempts);
+                        }
+                    }
+                    Err(e) => {
+                        println!("⚠️  Erreur scan {}/{} : {:?}", scan_attempt, max_scan_attempts, e);
+                    }
+                }
+            }
+
+            if devices.is_empty() {
+                return Err(anyhow::anyhow!("Aucun appareil Kettler trouvé après {} scans", max_scan_attempts));
+            }
+
             let device = devices.into_iter().last().ok_or_else(|| anyhow::anyhow!("No Kettler device found"))?;
-            println!("📱 Appareil trouvé : {}", device.get_name());
+            println!("📱 Appareil sélectionné : {}", device.get_name());
+            println!("   Adresse : {}", device.get_addr().to_string());
+
+            // Délai augmenté pour une meilleure stabilité
+            println!("⏳ Attente de 3 secondes pour stabilisation du périphérique...");
+            std::thread::sleep(Duration::from_secs(3));
+
             println!("🔗 Connexion en cours...");
-            device.connect().map_err(|e| anyhow::anyhow!("Connect failed: {}", e))
+
+            // Tentative de connexion avec retry
+            let mut conn_result = device.connect();
+            if conn_result.is_err() {
+                println!("⚠️  Première tentative de connexion échouée, réessai dans 2 secondes...");
+                std::thread::sleep(Duration::from_secs(2));
+                conn_result = device.connect();
+            }
+
+            conn_result.map_err(|e| anyhow::anyhow!("Échec connexion après 2 tentatives: {}", e))
         }).await??;
 
         *connection.lock().unwrap() = Some(new_conn);
@@ -245,5 +320,197 @@ impl BikeController {
         println!("⚡ Puissance définie à {}W", level);
 
         Ok(())
+    }
+
+    // ===== Gestion des programmes d'entraînement =====
+
+    /// Crée un nouveau programme d'entraînement
+    pub async fn create_program(&self, program: TrainingProgram) -> Result<()> {
+        if !program.is_valid() {
+            bail!("Programme invalide : vérifiez que tous les intervalles ont une durée > 0 et une puissance <= 400W");
+        }
+
+        let mut programs = self.programs.lock().unwrap();
+
+        if programs.contains_key(&program.id) {
+            bail!("Un programme avec l'ID '{}' existe déjà", program.id);
+        }
+
+        println!("📝 Nouveau programme créé : {} ({} intervalles, {}s total)",
+                 program.name, program.intervals.len(), program.total_duration());
+
+        programs.insert(program.id.clone(), program);
+        Ok(())
+    }
+
+    /// Met à jour un programme existant
+    pub async fn update_program(&self, program: TrainingProgram) -> Result<()> {
+        if !program.is_valid() {
+            bail!("Programme invalide");
+        }
+
+        let mut programs = self.programs.lock().unwrap();
+
+        if !programs.contains_key(&program.id) {
+            bail!("Programme '{}' introuvable", program.id);
+        }
+
+        // Vérifier qu'on ne modifie pas un programme en cours d'exécution
+        let active = self.active_program.lock().unwrap();
+        if let Some(ref state) = *active {
+            if state.program_id == program.id {
+                bail!("Impossible de modifier un programme en cours d'exécution");
+            }
+        }
+
+        println!("📝 Programme mis à jour : {}", program.name);
+        programs.insert(program.id.clone(), program);
+        Ok(())
+    }
+
+    /// Supprime un programme
+    pub async fn delete_program(&self, program_id: &str) -> Result<()> {
+        // Vérifier qu'on ne supprime pas un programme en cours d'exécution
+        let active = self.active_program.lock().unwrap();
+        if let Some(ref state) = *active {
+            if state.program_id == program_id {
+                bail!("Impossible de supprimer un programme en cours d'exécution");
+            }
+        }
+
+        let mut programs = self.programs.lock().unwrap();
+        if programs.remove(program_id).is_some() {
+            println!("🗑️  Programme '{}' supprimé", program_id);
+            Ok(())
+        } else {
+            bail!("Programme '{}' introuvable", program_id);
+        }
+    }
+
+    /// Liste tous les programmes
+    pub async fn list_programs(&self) -> Vec<TrainingProgram> {
+        let programs = self.programs.lock().unwrap();
+        programs.values().cloned().collect()
+    }
+
+    /// Obtient un programme par son ID
+    pub async fn get_program(&self, program_id: &str) -> Option<TrainingProgram> {
+        let programs = self.programs.lock().unwrap();
+        programs.get(program_id).cloned()
+    }
+
+    /// Démarre l'exécution d'un programme
+    pub async fn start_program(&self, program_id: &str) -> Result<()> {
+        // Vérifier qu'aucun programme n'est en cours
+        {
+            let active = self.active_program.lock().unwrap();
+            if active.is_some() {
+                bail!("Un programme est déjà en cours d'exécution. Arrêtez-le d'abord.");
+            }
+        }
+
+        // Récupérer le programme
+        let program = {
+            let programs = self.programs.lock().unwrap();
+            programs.get(program_id)
+                .cloned()
+                .ok_or_else(|| anyhow::anyhow!("Programme '{}' introuvable", program_id))?
+        };
+
+        if !program.is_valid() {
+            bail!("Programme invalide");
+        }
+
+        // Créer l'état d'exécution
+        let state = ProgramExecutionState::new(program);
+
+        // Définir la puissance initiale
+        self.set_power(state.current_power_target).await?;
+
+        println!("🎯 Démarrage du programme : {}", state.program_name);
+        println!("   Durée totale : {}s", state.total_duration);
+        println!("   Premier intervalle : {}W", state.current_power_target);
+
+        *self.active_program.lock().unwrap() = Some(state);
+
+        Ok(())
+    }
+
+    /// Démarre la boucle de mise à jour du programme (à appeler après start_program)
+    pub fn start_program_loop(self: Arc<Self>) {
+        tokio::spawn(async move {
+            Arc::clone(&self).program_update_loop().await;
+        });
+    }
+
+    /// Arrête le programme en cours
+    pub async fn stop_program(&self) -> Result<()> {
+        let mut active = self.active_program.lock().unwrap();
+
+        if let Some(state) = active.take() {
+            println!("⏹️  Programme '{}' arrêté", state.program_name);
+            println!("   Progression : {:.1}% ({}/{}s)",
+                     state.progress_percentage(),
+                     state.total_elapsed,
+                     state.total_duration);
+            Ok(())
+        } else {
+            bail!("Aucun programme en cours d'exécution");
+        }
+    }
+
+    /// Obtient l'état du programme en cours
+    pub async fn get_active_program(&self) -> Option<ProgramExecutionState> {
+        self.active_program.lock().unwrap().clone()
+    }
+
+    /// Boucle de mise à jour du programme (appelée toutes les secondes)
+    async fn program_update_loop(self: Arc<Self>) {
+        let mut interval = time::interval(Duration::from_secs(1));
+
+        loop {
+            interval.tick().await;
+
+            let should_stop = {
+                let mut active = self.active_program.lock().unwrap();
+
+                if let Some(ref mut state) = *active {
+                    // Avancer d'une seconde
+                    let finished = state.advance(1);
+
+                    if finished {
+                        println!("🏁 Programme '{}' terminé !", state.program_name);
+                        true
+                    } else {
+                        // Mettre à jour la puissance si on a changé d'intervalle
+                        let current_power = self.data.lock().unwrap().power;
+                        if current_power != state.current_power_target {
+                            println!("🔄 Changement d'intervalle : {}W → {}W",
+                                     current_power, state.current_power_target);
+                            if let Some(ref name) = state.current_interval_name {
+                                println!("   Intervalle : {}", name);
+                            }
+
+                            // Mettre à jour la puissance de manière asynchrone
+                            let controller = self.clone();
+                            let power = state.current_power_target;
+                            tokio::spawn(async move {
+                                let _ = controller.set_power(power).await;
+                            });
+                        }
+                        false
+                    }
+                } else {
+                    // Pas de programme actif, arrêter la boucle
+                    true
+                }
+            };
+
+            if should_stop {
+                let mut active = self.active_program.lock().unwrap();
+                *active = None;
+                break;
+            }
+        }
     }
 }
