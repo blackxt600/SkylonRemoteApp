@@ -5,6 +5,14 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.3.1] - 2025-11-09
+
+### Modifié
+- **Interface de création de programmes** (static/programs.html)
+  - Durée par défaut des intervalles réduite de 5 minutes (300s) à 1 minute (60s)
+  - Facilite la création de programmes plus courts et personnalisés
+  - Les utilisateurs peuvent toujours ajuster la durée de 30 secondes à 20 minutes
+
 ## [1.3.0] - 2025-11-09
 
 ### Ajouté
