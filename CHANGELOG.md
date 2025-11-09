@@ -5,6 +5,34 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.5.0] - 2025-11-09
+
+### Ajouté
+- **Graphique RPM amélioré avec seuil de référence**
+  - Nouveau contrôle de RPM cible avec boutons +/- (plage 20-200 RPM)
+  - Ligne de seuil jaune en pointillés affichant le RPM cible
+  - Coloration conditionnelle du graphique :
+    - Vert (rgba(34, 197, 94)) quand RPM au-dessus du seuil
+    - Rouge (rgba(239, 68, 68)) quand RPM en dessous du seuil
+  - Sauvegarde du RPM cible dans localStorage
+  - Persistance entre les sessions
+
+### Modifié
+- **Repositionnement des éléments d'interface**
+  - Date déplacée en haut à gauche (jour + date)
+  - Heure déplacée au centre en haut (dans un badge violet)
+  - Bouton "📋 Programmes" déplacé en bas au centre (à gauche)
+  - Bouton "⚙️ Éditer" déplacé en bas au centre (à droite)
+  - Espacement de 20px entre les deux boutons centrés
+
+### Technique
+- `static/index.html` : +145 lignes de modifications
+  - Fonctions `loadTargetRpm()`, `saveTargetRpm()`
+  - Fonctions `increaseTargetRpm()`, `decreaseTargetRpm()`
+  - Refonte complète de `drawRpmChart()` avec coloration conditionnelle segment par segment
+  - Division de `.datetime-display` en `.date-display` et `.time-display`
+  - Repositionnement CSS avec `transform: translateX()` pour centrage des boutons
+
 ## [1.4.0] - 2025-11-09
 
 ### Ajouté

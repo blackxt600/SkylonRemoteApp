@@ -580,8 +580,8 @@
             transform: scale(0.95);
         }
 
-        /* Date et heure en haut à gauche */
-        .datetime-display {
+        /* Date en haut à gauche */
+        .date-display {
             position: fixed;
             top: 20px;
             left: 20px;
@@ -598,11 +598,30 @@
             line-height: 1.4;
         }
 
-        /* Bouton programmes personnalisés */
+        /* Heure en haut au centre */
+        .time-display {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1.3em;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+        }
+
+        /* Boutons programmes personnalisés - en bas au centre */
         .programs-btn {
             position: fixed;
-            top: 80px;
-            right: 20px;
+            bottom: 20px;
             background: rgba(139, 92, 246, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
@@ -621,14 +640,41 @@
             gap: 8px;
         }
 
+        /* Bouton PROGRAMMES - à gauche du centre */
+        .programs-btn:first-of-type {
+            left: 50%;
+            transform: translateX(calc(-100% - 10px));
+        }
+
+        /* Bouton EDITER - à droite du centre */
+        .programs-btn:last-of-type {
+            left: 50%;
+            transform: translateX(10px);
+        }
+
         .programs-btn:hover {
             background: rgba(139, 92, 246, 1);
-            transform: scale(1.05);
             box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .programs-btn:first-of-type:hover {
+            transform: translateX(calc(-100% - 10px)) scale(1.05);
+        }
+
+        .programs-btn:last-of-type:hover {
+            transform: translateX(10px) scale(1.05);
         }
 
         .programs-btn:active {
             transform: scale(0.98);
+        }
+
+        .programs-btn:first-of-type:active {
+            transform: translateX(calc(-100% - 10px)) scale(0.98);
+        }
+
+        .programs-btn:last-of-type:active {
+            transform: translateX(10px) scale(0.98);
         }
 
         /* Boutons système (shutdown/reboot) */
@@ -731,16 +777,16 @@
     </style>
 </head>
 <body>
-    <div class="datetime-display" id="datetimeDisplay">
+    <div class="date-display">
         <div class="datetime-day" id="datetimeDay">Lundi</div>
         <div class="datetime-date" id="datetimeDate">26 janvier 2025</div>
-        <div class="datetime-time" id="datetimeTime">14:30:00</div>
     </div>
+    <div class="time-display" id="datetimeTime">14:30:00</div>
     <a href="/programs.html" class="programs-btn" title="Programmes d'entraînement personnalisés">
         <span>📋</span>
         <span>Programmes</span>
     </a>
-    <button class="programs-btn" onclick="openProgramsEditor()" title="Éditer les programmes prédéfinis" style="top: 140px;">
+    <button class="programs-btn" onclick="openProgramsEditor()" title="Éditer les programmes prédéfinis">
         <span>⚙️</span>
         <span>Éditer</span>
     </button>
@@ -783,6 +829,12 @@
 
                 <div class="rpm-chart-panel">
                     <div class="rpm-chart-title">📊 Évolution du RPM</div>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="color: rgba(255,255,255,0.7); font-size: 0.85em;">RPM Cible:</span>
+                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">−</button>
+                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1.1em; min-width: 50px; text-align: center;">60</span>
+                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">+</button>
+                    </div>
                     <div class="rpm-chart-container">
                         <canvas id="rpmChart"></canvas>
                     </div>
@@ -898,6 +950,39 @@
         const MAX_RPM_HISTORY = 60; // 60 secondes d'historique
         let rpmChart = null;
         let rpmChartCtx = null;
+        let targetRpm = 60; // RPM de référence par défaut
+
+        // Charger le RPM cible depuis localStorage
+        function loadTargetRpm() {
+            const saved = localStorage.getItem('targetRpm');
+            if (saved) {
+                targetRpm = parseInt(saved);
+                document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            }
+        }
+
+        // Sauvegarder le RPM cible dans localStorage
+        function saveTargetRpm() {
+            localStorage.setItem('targetRpm', targetRpm);
+        }
+
+        // Augmenter le RPM cible
+        function increaseTargetRpm() {
+            targetRpm += 5;
+            if (targetRpm > 200) targetRpm = 200; // Maximum 200 RPM
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        // Diminuer le RPM cible
+        function decreaseTargetRpm() {
+            targetRpm -= 5;
+            if (targetRpm < 20) targetRpm = 20; // Minimum 20 RPM
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
 
         // Variables des programmes d'entraînement
         let currentProgram = 'none';
@@ -1294,8 +1379,8 @@
             // Effacer le canvas
             rpmChartCtx.clearRect(0, 0, width, height);
 
-            // Trouver le maximum pour l'échelle
-            const maxRpm = Math.max(...rpmHistory, 100); // Minimum 100 pour l'échelle
+            // Trouver le maximum pour l'échelle (inclure targetRpm)
+            const maxRpm = Math.max(...rpmHistory, targetRpm, 100); // Minimum 100 pour l'échelle
             const roundedMax = Math.ceil(maxRpm / 20) * 20; // Arrondir au 20 supérieur
 
             // Dessiner le fond de la grille
@@ -1318,61 +1403,83 @@
                 rpmChartCtx.fillText(Math.round(value), padding - 10, y + 4);
             }
 
-            // Dessiner la courbe RPM
+            // Dessiner la ligne de seuil RPM cible
+            const targetY = height - padding - (targetRpm / roundedMax) * chartHeight;
+            rpmChartCtx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            rpmChartCtx.lineWidth = 2;
+            rpmChartCtx.setLineDash([5, 5]);
+            rpmChartCtx.beginPath();
+            rpmChartCtx.moveTo(padding, targetY);
+            rpmChartCtx.lineTo(width - padding, targetY);
+            rpmChartCtx.stroke();
+            rpmChartCtx.setLineDash([]);
+
+            // Label pour le seuil
+            rpmChartCtx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            rpmChartCtx.font = 'bold 11px Inter';
+            rpmChartCtx.textAlign = 'left';
+            rpmChartCtx.fillText(`Cible: ${targetRpm}`, padding + 5, targetY - 5);
+
+            // Dessiner la courbe RPM avec coloration conditionnelle
             if (rpmHistory.length > 0) {
                 const pointSpacing = chartWidth / (MAX_RPM_HISTORY - 1);
 
-                // Dessiner l'aire sous la courbe (gradient)
-                const gradient = rpmChartCtx.createLinearGradient(0, padding, 0, height - padding);
-                gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
-                gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+                // Dessiner l'aire sous la courbe avec gradient conditionnel
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
 
-                rpmChartCtx.fillStyle = gradient;
-                rpmChartCtx.beginPath();
-                rpmChartCtx.moveTo(padding, height - padding);
+                    // Déterminer la couleur en fonction du RPM moyen du segment
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    const color = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 0.15)'  // Vert si au-dessus
+                        : 'rgba(239, 68, 68, 0.15)';  // Rouge si en dessous
 
-                for (let i = 0; i < rpmHistory.length; i++) {
-                    const x = padding + i * pointSpacing;
-                    const y = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
-                    if (i === 0) {
-                        rpmChartCtx.lineTo(x, y);
-                    } else {
-                        rpmChartCtx.lineTo(x, y);
-                    }
+                    rpmChartCtx.fillStyle = color;
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.lineTo(x2, height - padding);
+                    rpmChartCtx.lineTo(x1, height - padding);
+                    rpmChartCtx.closePath();
+                    rpmChartCtx.fill();
                 }
 
-                rpmChartCtx.lineTo(width - padding, height - padding);
-                rpmChartCtx.closePath();
-                rpmChartCtx.fill();
-
-                // Dessiner la ligne
-                rpmChartCtx.strokeStyle = 'rgba(167, 139, 250, 1)';
+                // Dessiner la ligne avec segments colorés
                 rpmChartCtx.lineWidth = 2.5;
-                rpmChartCtx.beginPath();
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
 
-                for (let i = 0; i < rpmHistory.length; i++) {
-                    const x = padding + i * pointSpacing;
-                    const y = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
-                    if (i === 0) {
-                        rpmChartCtx.moveTo(x, y);
-                    } else {
-                        rpmChartCtx.lineTo(x, y);
-                    }
+                    // Déterminer la couleur en fonction du RPM moyen du segment
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    rpmChartCtx.strokeStyle = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 1)'  // Vert si au-dessus
+                        : 'rgba(239, 68, 68, 1)';  // Rouge si en dessous
+
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.stroke();
                 }
-
-                rpmChartCtx.stroke();
 
                 // Dessiner un point au dernier point de données
                 const lastX = padding + (rpmHistory.length - 1) * pointSpacing;
                 const lastY = height - padding - (rpmHistory[rpmHistory.length - 1] / roundedMax) * chartHeight;
+                const lastRpm = rpmHistory[rpmHistory.length - 1];
+                const lastColor = lastRpm >= targetRpm ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
 
-                rpmChartCtx.fillStyle = 'rgba(167, 139, 250, 1)';
+                rpmChartCtx.fillStyle = lastColor;
                 rpmChartCtx.beginPath();
                 rpmChartCtx.arc(lastX, lastY, 4, 0, Math.PI * 2);
                 rpmChartCtx.fill();
 
                 // Cercle extérieur animé
-                rpmChartCtx.strokeStyle = 'rgba(167, 139, 250, 0.5)';
+                rpmChartCtx.strokeStyle = lastColor;
                 rpmChartCtx.lineWidth = 2;
                 rpmChartCtx.beginPath();
                 rpmChartCtx.arc(lastX, lastY, 6, 0, Math.PI * 2);
@@ -1534,6 +1641,8 @@
         updateTimerDisplay();
         updateDisplay();
         updateStatus();
+        loadPrograms();
+        loadTargetRpm();
         initRpmChart();
 
         // Redimensionner le graphique si la fenêtre change de taille
