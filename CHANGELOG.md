@@ -5,6 +5,43 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.4.0] - 2025-11-09
+
+### Ajouté
+- **Éditeur de programmes prédéfinis**
+  - Nouveau bouton "⚙️ Éditer" dans l'interface principale
+  - Modal d'édition avec visualisation de tous les programmes (Plat, Vallée, Collines, etc.)
+  - Prévisualisation graphique sous forme de mini histogrammes
+  - Édition des 30 valeurs de puissance par minute (une par minute)
+  - Sauvegarde automatique dans localStorage du navigateur
+  - Persistance des modifications entre les sessions
+  - Bouton de réinitialisation par programme
+  - Bouton de réinitialisation globale (tous les programmes)
+  - Rechargement automatique si le programme actif est modifié
+
+### Modifié
+- **Limite minimale de puissance fixée à 25W** (au lieu de 0W)
+  - Validation frontend : curseurs et formulaires (25-400W)
+  - Validation backend : API REST `set_power()` (25-400W)
+  - Validation création de programmes personnalisés
+  - Messages d'erreur mis à jour partout
+  - Protection complète sur toutes les fonctionnalités
+- **Repositionnement des boutons système**
+  - Bouton "🔴 Éteindre" déplacé en bas à gauche
+  - Bouton "🔄 Redémarrer" déplacé en bas à droite
+  - Symétrie parfaite (même hauteur : 40px du bas)
+- **Interface programmes personnalisés** (static/programs.html)
+  - Curseur de puissance : min="25" au lieu de min="0"
+
+### Technique
+- `static/index.html` : +187 lignes
+  - Système localStorage pour sauvegarder les programmes personnalisés
+  - Fonctions `loadPrograms()`, `savePrograms()`
+  - Fonctions d'édition : `openProgramsEditor()`, `editProgramValues()`, `resetSingleProgram()`, `resetAllPrograms()`
+  - Séparation `defaultPrograms` (valeurs d'origine) et `programs` (valeurs actuelles)
+- `src/bike_controller.rs` : Validation `set_power()` 25-400W
+- `src/training_program.rs` : Validation `is_valid()` avec `power_target >= 25`
+
 ## [1.3.1] - 2025-11-09
 
 ### Modifié
