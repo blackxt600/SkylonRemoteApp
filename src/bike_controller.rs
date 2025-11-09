@@ -298,8 +298,8 @@ impl BikeController {
     }
 
     pub async fn set_power(&self, level: u16) -> Result<()> {
-        if level > 400 {
-            bail!("Niveau de puissance hors plage (0-400)");
+        if level < 25 || level > 400 {
+            bail!("Niveau de puissance hors plage (25-400)");
         }
 
         let connection = Arc::clone(&self.connection);
@@ -327,7 +327,7 @@ impl BikeController {
     /// Crée un nouveau programme d'entraînement
     pub async fn create_program(&self, program: TrainingProgram) -> Result<()> {
         if !program.is_valid() {
-            bail!("Programme invalide : vérifiez que tous les intervalles ont une durée > 0 et une puissance <= 400W");
+            bail!("Programme invalide : vérifiez que tous les intervalles ont une durée > 0 et une puissance entre 25W et 400W");
         }
 
         let mut programs = self.programs.lock().unwrap();

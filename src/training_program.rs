@@ -33,7 +33,7 @@ impl TrainingProgram {
     /// Vérifie si le programme est valide
     pub fn is_valid(&self) -> bool {
         !self.intervals.is_empty() &&
-        self.intervals.iter().all(|i| i.duration_secs > 0 && i.power_target <= 400)
+        self.intervals.iter().all(|i| i.duration_secs > 0 && i.power_target >= 25 && i.power_target <= 400)
     }
 }
 

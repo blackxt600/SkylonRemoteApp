@@ -634,7 +634,6 @@
         /* Boutons système (shutdown/reboot) */
         .system-btn {
             position: fixed;
-            left: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             padding: 12px 16px;
@@ -651,7 +650,8 @@
         }
 
         .shutdown-btn {
-            bottom: 100px;
+            left: 20px;
+            bottom: 40px;
             background: rgba(239, 68, 68, 0.9);
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
@@ -663,6 +663,7 @@
         }
 
         .reboot-btn {
+            right: 20px;
             bottom: 40px;
             background: rgba(251, 146, 60, 0.9);
             box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
@@ -739,6 +740,10 @@
         <span>📋</span>
         <span>Programmes</span>
     </a>
+    <button class="programs-btn" onclick="openProgramsEditor()" title="Éditer les programmes prédéfinis" style="top: 140px;">
+        <span>⚙️</span>
+        <span>Éditer</span>
+    </button>
     <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
 
     <!-- Boutons système -->
@@ -856,6 +861,30 @@
         </div>
     </div>
 
+    <!-- Modal d'édition des programmes -->
+    <div id="programsEditorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; overflow-y: auto;">
+        <div style="max-width: 1000px; margin: 40px auto; background: rgba(15, 15, 30, 0.98); border-radius: 20px; padding: 30px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="color: white; font-size: 1.8em; margin: 0;">⚙️ Édition des Programmes Prédéfinis</h2>
+                <button onclick="closeProgramsEditor()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); font-size: 2em; cursor: pointer; width: 40px; height: 40px;">&times;</button>
+            </div>
+
+            <div style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <p style="color: rgba(255,215,0,0.9); margin: 0; font-size: 0.9em;">
+                    💡 <strong>Info:</strong> Modifiez les 30 valeurs de puissance (une par minute) pour chaque programme. Les modifications sont sauvegardées dans votre navigateur.
+                </p>
+            </div>
+
+            <div style="margin-bottom: 20px; text-align: right;">
+                <button onclick="resetAllPrograms()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    🔄 Réinitialiser tous les programmes
+                </button>
+            </div>
+
+            <div id="programsEditorList"></div>
+        </div>
+    </div>
+
     <script>
         let currentPower = 0;
         let powerStep = 5;
@@ -875,8 +904,8 @@
         let programActive = false;
         let difficultyAdjustment = 0;
 
-        // Définition des programmes (30 minutes, puissance par minute)
-        const programs = {
+        // Définition des programmes par défaut (30 minutes, puissance par minute)
+        const defaultPrograms = {
             'plat': [
                 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
                 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
@@ -923,6 +952,59 @@
                 100, 110, 130, 120, 100, 80, 70, 60, 60, 60
             ]
         };
+
+        // Noms des programmes pour l'affichage
+        const programNames = {
+            'plat': 'Plat',
+            'vallee': 'Vallée',
+            'collines': 'Collines',
+            'montagne': 'Montagne',
+            'alpin': 'Col Alpin',
+            'intervalle': 'Intervalle',
+            'pyramide': 'Pyramide',
+            'changement': 'Changement',
+            'altitude': 'Altitude'
+        };
+
+        // Charger les programmes depuis localStorage ou utiliser les valeurs par défaut
+        let programs = {};
+        function loadPrograms() {
+            const saved = localStorage.getItem('customPrograms');
+            if (saved) {
+                try {
+                    programs = JSON.parse(saved);
+                    console.log('✅ Programmes personnalisés chargés depuis localStorage');
+                } catch (e) {
+                    console.error('❌ Erreur lors du chargement des programmes:', e);
+                    programs = JSON.parse(JSON.stringify(defaultPrograms));
+                }
+            } else {
+                programs = JSON.parse(JSON.stringify(defaultPrograms));
+            }
+        }
+
+        // Sauvegarder les programmes dans localStorage
+        function savePrograms() {
+            localStorage.setItem('customPrograms', JSON.stringify(programs));
+            console.log('💾 Programmes sauvegardés');
+        }
+
+        // Réinitialiser tous les programmes aux valeurs par défaut
+        function resetAllPrograms() {
+            if (confirm('⚠️ Voulez-vous vraiment réinitialiser TOUS les programmes à leurs valeurs par défaut ?\n\nCette action est irréversible.')) {
+                programs = JSON.parse(JSON.stringify(defaultPrograms));
+                savePrograms();
+                alert('✅ Tous les programmes ont été réinitialisés !');
+                closeProgramsEditor();
+                // Recharger l'affichage si un programme est actif
+                if (currentProgram !== 'none') {
+                    selectProgram(currentProgram);
+                }
+            }
+        }
+
+        // Charger les programmes au démarrage
+        loadPrograms();
 
         // Formater le temps en HH:MM:SS
         function formatTime(seconds) {
@@ -1463,6 +1545,110 @@
                 drawRpmChart();
             }
         });
+
+        // ===== Fonctions d'édition des programmes =====
+
+        // Ouvrir le modal d'édition des programmes
+        function openProgramsEditor() {
+            const modal = document.getElementById('programsEditorModal');
+            const listContainer = document.getElementById('programsEditorList');
+            listContainer.innerHTML = '';
+
+            // Créer une carte pour chaque programme
+            Object.keys(programs).forEach(programId => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px;';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;';
+                header.innerHTML = `
+                    <h3 style="color: white; margin: 0; font-size: 1.3em;">${programNames[programId]}</h3>
+                    <div>
+                        <button onclick="editProgramValues('${programId}')" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 10px;">✎ Éditer</button>
+                        <button onclick="resetSingleProgram('${programId}')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">🔄 Réinitialiser</button>
+                    </div>
+                `;
+
+                // Mini histogramme de prévisualisation
+                const preview = document.createElement('div');
+                preview.style.cssText = 'display: flex; gap: 2px; height: 60px; align-items: flex-end;';
+                programs[programId].forEach(power => {
+                    const bar = document.createElement('div');
+                    const height = (power / 200) * 100; // Max 200W pour l'affichage
+                    bar.style.cssText = `flex: 1; background: linear-gradient(180deg, #8b5cf6, #a78bfa); border-radius: 2px 2px 0 0; height: ${height}%; opacity: 0.7;`;
+                    preview.appendChild(bar);
+                });
+
+                card.appendChild(header);
+                card.appendChild(preview);
+                listContainer.appendChild(card);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        // Fermer le modal d'édition
+        function closeProgramsEditor() {
+            document.getElementById('programsEditorModal').style.display = 'none';
+        }
+
+        // Éditer les valeurs d'un programme
+        function editProgramValues(programId) {
+            const newValues = prompt(
+                `✏️ Éditer le programme "${programNames[programId]}"\n\n` +
+                `Entrez 30 valeurs séparées par des virgules (une par minute)\n` +
+                `Plage : 25-400 Watts\n\n` +
+                `Valeurs actuelles :\n${programs[programId].join(', ')}`,
+                programs[programId].join(', ')
+            );
+
+            if (newValues !== null) {
+                try {
+                    const values = newValues.split(',').map(v => parseInt(v.trim()));
+
+                    // Validation
+                    if (values.length !== 30) {
+                        alert('❌ Erreur : Vous devez entrer exactement 30 valeurs !');
+                        return;
+                    }
+
+                    if (values.some(v => isNaN(v) || v < 25 || v > 400)) {
+                        alert('❌ Erreur : Toutes les valeurs doivent être des nombres entre 25 et 400 !');
+                        return;
+                    }
+
+                    // Sauvegarder
+                    programs[programId] = values;
+                    savePrograms();
+                    alert(`✅ Programme "${programNames[programId]}" mis à jour !`);
+
+                    // Rafraîchir l'affichage
+                    openProgramsEditor();
+
+                    // Recharger si c'est le programme actif
+                    if (currentProgram === programId) {
+                        selectProgram(programId);
+                    }
+                } catch (e) {
+                    alert('❌ Erreur de format. Utilisez des nombres séparés par des virgules.');
+                }
+            }
+        }
+
+        // Réinitialiser un seul programme
+        function resetSingleProgram(programId) {
+            if (confirm(`⚠️ Réinitialiser le programme "${programNames[programId]}" à ses valeurs par défaut ?`)) {
+                programs[programId] = [...defaultPrograms[programId]];
+                savePrograms();
+                alert(`✅ Programme "${programNames[programId]}" réinitialisé !`);
+                openProgramsEditor();
+
+                // Recharger si c'est le programme actif
+                if (currentProgram === programId) {
+                    selectProgram(programId);
+                }
+            }
+        }
     </script>
 </body>
 </html>
