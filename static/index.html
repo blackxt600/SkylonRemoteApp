@@ -20,7 +20,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 8px;
             position: relative;
             overflow-x: hidden;
         }
@@ -49,54 +49,58 @@
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            border-radius: 16px;
             box-shadow:
                 0 8px 32px rgba(0, 0, 0, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            max-width: 1100px;
+            padding: 12px;
+            max-width: 100%;
             width: 100%;
             position: relative;
             z-index: 1;
+            margin: 60px 8px 60px 8px;
         }
 
-        /* Layout en grille pour tablette paysage */
+        /* Layout en grille optimisé pour tablette 11 pouces paysage - 2 colonnes */
         @media (min-width: 800px) and (orientation: landscape) {
             .container {
-                padding: 30px;
+                padding: 15px;
+                max-width: 1400px;
             }
 
             .main-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 20px;
+                gap: 15px;
+                align-items: start;
             }
 
             .left-column {
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                gap: 12px;
             }
 
             .right-column {
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                gap: 12px;
             }
         }
 
         .status-panel {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
             backdrop-filter: blur(10px);
         }
 
         @media (min-width: 800px) and (orientation: landscape) {
             .status-panel {
                 margin-bottom: 0;
+                padding: 15px;
             }
         }
 
@@ -104,7 +108,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
+            padding: 10px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -115,8 +119,8 @@
         .status-label {
             font-weight: 500;
             color: rgba(255, 255, 255, 0.6);
-            font-size: 1em;
-            letter-spacing: 0.5px;
+            font-size: 0.9em;
+            letter-spacing: 0.3px;
         }
 
         .status-value {
@@ -125,16 +129,16 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 1.5em;
+            font-size: 1.3em;
             font-variant-numeric: tabular-nums;
         }
 
         .timer-panel {
             background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
             text-align: center;
             color: white;
             box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
@@ -143,30 +147,30 @@
         @media (min-width: 800px) and (orientation: landscape) {
             .timer-panel {
                 margin-bottom: 0;
-                padding: 20px;
+                padding: 18px;
             }
         }
 
         .timer-display {
-            font-size: 2.8em;
+            font-size: 2.2em;
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             font-family: 'Inter', monospace;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             font-variant-numeric: tabular-nums;
         }
 
         @media (min-width: 800px) and (orientation: landscape) {
             .timer-display {
-                font-size: 3.2em;
-                margin-bottom: 15px;
+                font-size: 2.5em;
+                margin-bottom: 12px;
             }
         }
 
         .timer-controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
         }
 
@@ -174,9 +178,9 @@
             background: rgba(255, 255, 255, 0.95);
             color: #8b5cf6;
             border: none;
-            border-radius: 12px;
-            padding: 12px 28px;
-            font-size: 1em;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -201,31 +205,32 @@
         .program-panel {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
             backdrop-filter: blur(10px);
         }
 
         @media (min-width: 800px) and (orientation: landscape) {
             .program-panel {
                 margin-bottom: 0;
+                padding: 15px;
             }
         }
 
         .program-title {
-            font-size: 1.1em;
+            font-size: 0.95em;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .program-selector {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -234,14 +239,14 @@
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(167, 139, 250, 0.3);
             color: rgba(255, 255, 255, 0.8);
-            padding: 10px 14px;
-            border-radius: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            flex: 1 1 calc(20% - 10px);
-            min-width: 95px;
-            font-size: 12.5px;
+            flex: 1 1 calc(20% - 6px);
+            min-width: 80px;
+            font-size: 11px;
             backdrop-filter: blur(10px);
         }
 
@@ -271,12 +276,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-            padding: 15px;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+            border-radius: 10px;
         }
 
         .difficulty-btn {
@@ -284,9 +289,9 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            font-size: 1.4em;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -304,43 +309,43 @@
 
         .difficulty-display {
             text-align: center;
-            min-width: 110px;
+            min-width: 90px;
         }
 
         .difficulty-label {
-            font-size: 0.8em;
+            font-size: 0.7em;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
         }
 
         .difficulty-value {
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: 700;
             color: #a78bfa;
         }
 
         .current-power-display {
             text-align: center;
-            padding: 18px;
+            padding: 12px;
             background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            margin-top: 15px;
+            border-radius: 10px;
+            margin-top: 12px;
             color: white;
             box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
         }
 
         .current-power-label {
-            font-size: 0.85em;
+            font-size: 0.75em;
             opacity: 0.85;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            letter-spacing: 0.3px;
             font-weight: 500;
         }
 
         .current-power-value {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: 800;
             font-family: 'Inter', monospace;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -348,26 +353,26 @@
         }
 
         .current-power-unit {
-            font-size: 1.2em;
+            font-size: 1em;
             opacity: 0.85;
-            margin-left: 6px;
+            margin-left: 5px;
             font-weight: 600;
         }
 
         .histogram-container {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
         .histogram-scale {
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 10px 5px;
-            font-size: 0.7em;
+            padding: 8px 4px;
+            font-size: 0.65em;
             color: rgba(255, 255, 255, 0.4);
-            min-width: 35px;
+            min-width: 30px;
             text-align: right;
             font-variant-numeric: tabular-nums;
         }
@@ -377,13 +382,19 @@
             align-items: flex-end;
             gap: 2px;
             height: 120px;
-            padding: 10px;
+            padding: 8px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+            border-radius: 10px;
             overflow-x: auto;
             flex: 1;
             position: relative;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .program-histogram {
+                height: 140px;
+            }
         }
 
         .program-histogram::before {
@@ -428,30 +439,26 @@
             opacity: 1;
         }
 
-        .control-panel {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
+        .manual-controls {
+            margin-top: 12px;
         }
 
         .control-title {
-            font-size: 1.1em;
+            font-size: 0.95em;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .power-display {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 18px;
         }
 
         .power-value {
-            font-size: 3em;
+            font-size: 2.5em;
             font-weight: 800;
             background: linear-gradient(135deg, #a78bfa, #c084fc);
             -webkit-background-clip: text;
@@ -462,16 +469,16 @@
         }
 
         .power-unit {
-            font-size: 1.2em;
+            font-size: 1em;
             color: rgba(255, 255, 255, 0.5);
             font-weight: 500;
         }
 
         .button-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .btn {
@@ -479,9 +486,9 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 75px;
-            height: 75px;
-            font-size: 1.8em;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -548,18 +555,18 @@
             }
         }
 
-        /* Bouton plein écran */
+        /* Bouton plein écran - aligné avec les autres éléments */
         .fullscreen-btn {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 8px;
+            right: 8px;
             background: rgba(139, 92, 246, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             width: 50px;
             height: 50px;
-            border-radius: 12px;
-            font-size: 1.5em;
+            border-radius: 10px;
+            font-size: 1.3em;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -580,54 +587,123 @@
             transform: scale(0.95);
         }
 
-        /* Date en haut à gauche */
-        .date-display {
+        /* Styles uniformisés pour TOUS les éléments de la barre supérieure */
+        .top-bar-item {
             position: fixed;
-            top: 20px;
-            left: 20px;
             background: rgba(139, 92, 246, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-size: 0.85em;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.9em;
             z-index: 1000;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-            font-weight: 500;
-            line-height: 1.4;
+            font-weight: 600;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
         }
 
-        /* Heure en haut au centre */
-        .time-display {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+        /* Items de statut - pas de position fixed car ils sont dans un flex container */
+        .top-status-item {
             background: rgba(139, 92, 246, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 1.3em;
-            z-index: 1000;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9em;
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 600;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        /* Date en haut à gauche */
+        .date-display {
+            top: 8px;
+            left: 8px;
+            flex-direction: column;
+            min-width: 140px;
+        }
+
+        .datetime-day {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .datetime-date {
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        /* Heure décalée sur la gauche (après la date) */
+        .time-display {
+            top: 8px;
+            left: 160px;
+            font-size: 0.9em;
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             text-align: center;
+            min-width: 110px;
+        }
+
+        /* Barre d'infos en haut - Status - décalée pour ne pas chevaucher le bouton fullscreen */
+        .top-status-bar {
+            position: fixed;
+            top: 8px;
+            right: 66px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .top-status-item {
+            gap: 6px;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .top-status-label {
+            opacity: 0.85;
+            font-size: 0.9em;
+        }
+
+        .top-status-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 0.9em;
+        }
+
+        /* Couleurs pour l'état de connexion */
+        .status-connected {
+            color: #10b981 !important;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .status-disconnected {
+            color: #ef4444 !important;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
         }
 
         /* Boutons programmes personnalisés - en bas au centre */
         .programs-btn {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px;
             background: rgba(139, 92, 246, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 10px 18px;
+            padding: 12px 20px;
             border-radius: 12px;
-            font-size: 0.9em;
+            font-size: 1em;
             z-index: 1000;
             cursor: pointer;
             transition: all 0.3s;
@@ -638,18 +714,19 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            height: 50px;
         }
 
         /* Bouton PROGRAMMES - à gauche du centre */
         .programs-btn:first-of-type {
             left: 50%;
-            transform: translateX(calc(-100% - 10px));
+            transform: translateX(calc(-100% - 8px));
         }
 
         /* Bouton EDITER - à droite du centre */
         .programs-btn:last-of-type {
             left: 50%;
-            transform: translateX(10px);
+            transform: translateX(8px);
         }
 
         .programs-btn:hover {
@@ -658,11 +735,11 @@
         }
 
         .programs-btn:first-of-type:hover {
-            transform: translateX(calc(-100% - 10px)) scale(1.05);
+            transform: translateX(calc(-100% - 8px)) scale(1.05);
         }
 
         .programs-btn:last-of-type:hover {
-            transform: translateX(10px) scale(1.05);
+            transform: translateX(8px) scale(1.05);
         }
 
         .programs-btn:active {
@@ -670,11 +747,11 @@
         }
 
         .programs-btn:first-of-type:active {
-            transform: translateX(calc(-100% - 10px)) scale(0.98);
+            transform: translateX(calc(-100% - 8px)) scale(0.98);
         }
 
         .programs-btn:last-of-type:active {
-            transform: translateX(10px) scale(0.98);
+            transform: translateX(8px) scale(0.98);
         }
 
         /* Boutons système (shutdown/reboot) */
@@ -682,9 +759,9 @@
             position: fixed;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 12px 16px;
+            padding: 12px 20px;
             border-radius: 12px;
-            font-size: 0.9em;
+            font-size: 1em;
             z-index: 1000;
             cursor: pointer;
             transition: all 0.3s;
@@ -693,11 +770,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            height: 50px;
         }
 
         .shutdown-btn {
-            left: 20px;
-            bottom: 40px;
+            left: 10px;
+            bottom: 10px;
             background: rgba(239, 68, 68, 0.9);
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
@@ -709,8 +787,8 @@
         }
 
         .reboot-btn {
-            right: 20px;
-            bottom: 40px;
+            right: 10px;
+            bottom: 10px;
             background: rgba(251, 146, 60, 0.9);
             box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
         }
@@ -745,28 +823,34 @@
         .rpm-chart-panel {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 12px;
             backdrop-filter: blur(10px);
         }
 
         .rpm-chart-title {
-            font-size: 1em;
+            font-size: 0.9em;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             text-align: center;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .rpm-chart-container {
             position: relative;
             width: 100%;
-            height: 180px;
+            height: 200px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .rpm-chart-container {
+                height: 250px;
+            }
         }
 
         #rpmChart {
@@ -777,11 +861,27 @@
     </style>
 </head>
 <body>
-    <div class="date-display">
+    <div class="date-display top-bar-item">
         <div class="datetime-day" id="datetimeDay">Lundi</div>
         <div class="datetime-date" id="datetimeDate">26 janvier 2025</div>
     </div>
-    <div class="time-display" id="datetimeTime">14:30:00</div>
+    <div class="time-display top-bar-item" id="datetimeTime">14:30:00</div>
+
+    <!-- Barre d'infos de statut en haut à droite -->
+    <div class="top-status-bar">
+        <div class="top-status-item">
+            <span class="top-status-value status-disconnected" id="connection-status-top">Déconnecté</span>
+        </div>
+        <div class="top-status-item">
+            <span class="top-status-label">RPM:</span>
+            <span class="top-status-value" id="rpm-top">--</span>
+        </div>
+        <div class="top-status-item">
+            <span class="top-status-label">Puissance:</span>
+            <span class="top-status-value" id="power-top">-- W</span>
+        </div>
+    </div>
+
     <a href="/programs.html" class="programs-btn" title="Programmes d'entraînement personnalisés">
         <span>📋</span>
         <span>Programmes</span>
@@ -804,109 +904,90 @@
     <div class="container">
         <div class="main-grid">
             <div class="left-column">
-                <div class="status-panel">
-            <div class="status-item">
-                <span class="status-label">État</span>
-                <span class="status-value" id="connection-status">🔌 Déconnecté</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">RPM</span>
-                <span class="status-value" id="rpm">-- tr/min</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Puissance</span>
-                <span class="status-value" id="power">-- W</span>
-            </div>
-        </div>
+                <div class="rpm-chart-panel">
+                    <div class="rpm-chart-title">📊 Évolution du RPM</div>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.7); font-size: 0.75em;">RPM Cible:</span>
+                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">−</button>
+                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1em; min-width: 45px; text-align: center;">60</span>
+                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">+</button>
+                    </div>
+                    <div class="rpm-chart-container">
+                        <canvas id="rpmChart"></canvas>
+                    </div>
+                </div>
 
                 <div class="timer-panel">
                     <div class="timer-display" id="timer">00:00:00</div>
                     <div class="timer-controls">
                         <button class="timer-btn" id="startStopBtn" onclick="toggleTimer()">▶ Démarrer</button>
-                        <button class="timer-btn" onclick="resetTimer()">↻ Réinitialiser</button>
-                    </div>
-                </div>
-
-                <div class="rpm-chart-panel">
-                    <div class="rpm-chart-title">📊 Évolution du RPM</div>
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <span style="color: rgba(255,255,255,0.7); font-size: 0.85em;">RPM Cible:</span>
-                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">−</button>
-                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1.1em; min-width: 50px; text-align: center;">60</span>
-                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 600;">+</button>
-                    </div>
-                    <div class="rpm-chart-container">
-                        <canvas id="rpmChart"></canvas>
+                        <button class="timer-btn" onclick="resetTimer()">↻ Reset</button>
                     </div>
                 </div>
             </div>
 
             <div class="right-column">
                 <div class="program-panel">
-            <div class="program-title">📋 Programme d'Entraînement (30 min)</div>
-
-            <div class="program-selector">
-                <button class="program-btn active" onclick="selectProgram('none')">Manuel</button>
-                <button class="program-btn" onclick="selectProgram('plat')">Plat</button>
-                <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
-                <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
-                <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
-                <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
-                <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
-                <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
-                <button class="program-btn" onclick="selectProgram('changement')">Changement</button>
-                <button class="program-btn" onclick="selectProgram('altitude')">Altitude</button>
-            </div>
-
-            <div class="program-info" id="programInfo" style="display: none;">
-                <div class="difficulty-control">
-                    <button class="difficulty-btn" onclick="decreaseDifficulty()">−</button>
-                    <div class="difficulty-display">
-                        <div class="difficulty-label">Difficulté</div>
-                        <div class="difficulty-value" id="difficultyLevel">Normal</div>
-                    </div>
-                    <button class="difficulty-btn" onclick="increaseDifficulty()">+</button>
-                </div>
-
-                <div class="current-power-display">
-                    <div class="current-power-label">Puissance Active</div>
-                    <div>
-                        <span class="current-power-value" id="currentActivePower">--</span>
-                        <span class="current-power-unit">W</span>
-                    </div>
-                </div>
-
-                <div class="histogram-container">
-                    <div class="histogram-scale" id="histogramScale">
-                        <div>200</div>
-                        <div>150</div>
-                        <div>100</div>
-                        <div>50</div>
-                        <div>0</div>
-                    </div>
-                    <div class="program-histogram" id="histogram"></div>
-                </div>
-            </div>
-        </div>
-
-                <div class="control-panel" id="controlPanel">
-                    <div class="control-title">Contrôle de Puissance</div>
-
-                    <div class="power-display">
-                        <div class="power-value" id="powerControl">--</div>
-                        <div class="power-unit">Watts</div>
+                    <div class="program-title">📋 Programme d'Entraînement (30 min)</div>
+                    <div class="program-selector">
+                        <button class="program-btn active" onclick="selectProgram('none')">Manuel</button>
+                        <button class="program-btn" onclick="selectProgram('plat')">Plat</button>
+                        <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
+                        <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
+                        <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
+                        <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
+                        <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
+                        <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                        <button class="program-btn" onclick="selectProgram('changement')">Changement</button>
+                        <button class="program-btn" onclick="selectProgram('altitude')">Altitude</button>
                     </div>
 
-                    <div class="button-container">
-                        <button class="btn" id="decreaseBtn" onclick="decreasePower()">−</button>
-                        <button class="btn" id="increaseBtn" onclick="increasePower()">+</button>
+                    <!-- Contrôles pour mode Manuel -->
+                    <div class="manual-controls" id="manualControls">
+                        <div class="control-title">Contrôle de Puissance</div>
+                        <div class="power-display">
+                            <div class="power-value" id="powerControl">--</div>
+                            <div class="power-unit">Watts</div>
+                        </div>
+                        <div class="button-container">
+                            <button class="btn" id="decreaseBtn" onclick="decreasePower()">−</button>
+                            <button class="btn" id="increaseBtn" onclick="increasePower()">+</button>
+                        </div>
+                        <div class="step-controls">
+                            <button class="step-btn active" onclick="setStep(5)">+5W</button>
+                            <button class="step-btn" onclick="setStep(10)">+10W</button>
+                            <button class="step-btn" onclick="setStep(25)">+25W</button>
+                            <button class="step-btn" onclick="setStep(50)">+50W</button>
+                        </div>
                     </div>
 
-                    <div class="step-controls">
-                        <button class="step-btn active" onclick="setStep(5)">+5W</button>
-                        <button class="step-btn" onclick="setStep(10)">+10W</button>
-                        <button class="step-btn" onclick="setStep(25)">+25W</button>
-                        <button class="step-btn" onclick="setStep(50)">+50W</button>
+                    <!-- Infos pour programmes automatiques -->
+                    <div class="program-info" id="programInfo" style="display: none;">
+                        <div class="difficulty-control">
+                            <button class="difficulty-btn" onclick="decreaseDifficulty()">−</button>
+                            <div class="difficulty-display">
+                                <div class="difficulty-label">Difficulté</div>
+                                <div class="difficulty-value" id="difficultyLevel">Normal</div>
+                            </div>
+                            <button class="difficulty-btn" onclick="increaseDifficulty()">+</button>
+                        </div>
+                        <div class="current-power-display">
+                            <div class="current-power-label">Puissance Active</div>
+                            <div>
+                                <span class="current-power-value" id="currentActivePower">--</span>
+                                <span class="current-power-unit">W</span>
+                            </div>
+                        </div>
+                        <div class="histogram-container">
+                            <div class="histogram-scale" id="histogramScale">
+                                <div>200</div>
+                                <div>150</div>
+                                <div>100</div>
+                                <div>50</div>
+                                <div>0</div>
+                            </div>
+                            <div class="program-histogram" id="histogram"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -938,7 +1019,7 @@
     </div>
 
     <script>
-        let currentPower = 0;
+        let currentPower = 25;
         let powerStep = 5;
         let timerSeconds = 0;
         let timerInterval = null;
@@ -1348,9 +1429,14 @@
         // Démarrer/Arrêter le chronomètre
         function toggleTimer() {
             const btn = document.getElementById('startStopBtn');
+            if (!btn) {
+                console.error('❌ Bouton startStopBtn introuvable');
+                return;
+            }
 
             if (isTimerRunning) {
                 // Arrêter le chronomètre
+                console.log('⏸️ Pause du chronomètre');
                 clearInterval(timerInterval);
                 timerInterval = null;
                 isTimerRunning = false;
@@ -1358,6 +1444,7 @@
                 btn.classList.remove('running');
             } else {
                 // Démarrer le chronomètre
+                console.log('▶️ Démarrage du chronomètre');
                 timerInterval = setInterval(() => {
                     timerSeconds++;
                     updateTimerDisplay();
@@ -1365,6 +1452,7 @@
 
                     // Vérifier si le programme est terminé (30 minutes = 1800 secondes)
                     if (programActive && timerSeconds >= 1800) {
+                        console.log('🏁 Programme terminé (30 min)');
                         clearInterval(timerInterval);
                         timerInterval = null;
                         isTimerRunning = false;
@@ -1427,6 +1515,16 @@
             updateDifficultyDisplay();
             renderHistogram();
             updateActivePowerDisplay();
+
+            // Appliquer immédiatement le changement de difficulté si le timer est en cours
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
         }
 
         // Diminuer la difficulté
@@ -1437,6 +1535,16 @@
             updateDifficultyDisplay();
             renderHistogram();
             updateActivePowerDisplay();
+
+            // Appliquer immédiatement le changement de difficulté si le timer est en cours
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
         }
 
         // Mettre à jour l'affichage de la difficulté
@@ -1466,21 +1574,32 @@
             });
             event.target.classList.add('active');
 
-            // Afficher/masquer les infos du programme
+            // Afficher/masquer les contrôles appropriés
             const programInfo = document.getElementById('programInfo');
-            const controlPanel = document.getElementById('controlPanel');
+            const manualControls = document.getElementById('manualControls');
 
             if (programActive) {
+                // Mode programme automatique
                 programInfo.style.display = 'block';
-                controlPanel.style.display = 'none';
+                manualControls.style.display = 'none';
                 difficultyAdjustment = 0;
                 updateDifficultyDisplay();
                 renderHistogram();
                 resetTimer();
                 startProgramStats(); // Démarrer la collecte de statistiques
+
+                // Définir la puissance initiale du programme (minute 0)
+                if (programs[currentProgram]) {
+                    const initialPower = Math.max(25, programs[currentProgram][0] + difficultyAdjustment);
+                    setPower(initialPower);
+                    updateActivePowerDisplay();
+                }
             } else {
+                // Mode manuel
                 programInfo.style.display = 'none';
-                controlPanel.style.display = 'block';
+                manualControls.style.display = 'block';
+                // Définir la puissance par défaut en mode manuel à 25W
+                setPower(25);
             }
         }
 
@@ -1551,10 +1670,10 @@
             // Obtenir la puissance cible pour la minute actuelle
             if (programs[currentProgram] && currentMinute < 30) {
                 const basePower = programs[currentProgram][currentMinute];
-                const adjustedPower = Math.max(0, basePower + difficultyAdjustment);
+                const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
 
                 // Ajuster automatiquement la puissance si le programme est actif et le chrono tourne
-                if (isTimerRunning && currentMinute > 0) {
+                if (isTimerRunning && currentMinute >= 0) {
                     setPower(adjustedPower);
                 }
             }
@@ -1563,25 +1682,38 @@
         // Définir la puissance
         async function setPower(watts) {
             try {
+                console.log('🔧 Définir puissance:', watts, 'W', 'currentPower avant:', currentPower);
                 const response = await fetch(`/power/${watts}`, { method: 'POST' });
+                console.log('📡 Réponse fetch:', response.status, response.statusText);
+
                 if (response.ok) {
+                    const responseText = await response.text();
+                    console.log('📝 Réponse serveur:', responseText);
                     currentPower = watts;
                     updateDisplay();
+                    console.log('✅ Puissance définie:', watts, 'W', 'currentPower après:', currentPower);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur réponse serveur:', response.status, errorText);
                 }
             } catch (error) {
-                console.error('Erreur lors du réglage de la puissance:', error);
+                console.error('❌ Erreur lors du réglage de la puissance:', error);
             }
         }
 
         // Augmenter la puissance
         async function increasePower() {
-            const newPower = Math.min(currentPower + powerStep, 250);
+            console.log('🔼 BOUTON + CLIQUÉ - currentPower:', currentPower, 'powerStep:', powerStep);
+            const newPower = Math.min(currentPower + powerStep, 400);
+            console.log('⬆️ Augmenter puissance:', currentPower, '→', newPower);
             await setPower(newPower);
         }
 
         // Diminuer la puissance
         async function decreasePower() {
-            const newPower = Math.max(currentPower - powerStep, 0);
+            console.log('🔽 BOUTON - CLIQUÉ - currentPower:', currentPower, 'powerStep:', powerStep);
+            const newPower = Math.max(currentPower - powerStep, 25);
+            console.log('⬇️ Diminuer puissance:', currentPower, '→', newPower);
             await setPower(newPower);
         }
 
@@ -1596,26 +1728,65 @@
 
         // Mettre à jour l'affichage
         function updateDisplay() {
-            document.getElementById('power').textContent = currentPower + ' W';
-            document.getElementById('powerControl').textContent = currentPower;
+            console.log('🔄 updateDisplay appelé - currentPower:', currentPower);
+
+            const powerTop = document.getElementById('power-top');
+            if (powerTop) {
+                powerTop.textContent = currentPower + ' W';
+                console.log('✓ power-top mis à jour:', powerTop.textContent);
+            } else {
+                console.warn('⚠️ power-top introuvable');
+            }
+
+            const powerControl = document.getElementById('powerControl');
+            if (powerControl) {
+                powerControl.textContent = currentPower;
+                console.log('✓ powerControl mis à jour:', powerControl.textContent);
+            } else {
+                console.warn('⚠️ powerControl introuvable');
+            }
         }
 
         // Initialiser le graphique RPM
         function initRpmChart() {
-            rpmChart = document.getElementById('rpmChart');
-            if (!rpmChart) return;
+            try {
+                rpmChart = document.getElementById('rpmChart');
+                if (!rpmChart) {
+                    console.error('❌ Canvas RPM introuvable');
+                    return;
+                }
 
-            rpmChartCtx = rpmChart.getContext('2d');
+                const container = rpmChart.parentElement;
+                if (!container) {
+                    console.error('❌ Container du canvas RPM introuvable');
+                    return;
+                }
 
-            // Définir la taille du canvas
-            const container = rpmChart.parentElement;
-            rpmChart.width = container.clientWidth;
-            rpmChart.height = container.clientHeight;
+                // Vérifier que le container a des dimensions
+                if (container.clientWidth === 0 || container.clientHeight === 0) {
+                    console.warn('⚠️ Container sans dimensions, nouvelle tentative dans 200ms');
+                    setTimeout(initRpmChart, 200);
+                    return;
+                }
 
-            // Initialiser l'historique avec des zéros
-            rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+                rpmChartCtx = rpmChart.getContext('2d');
+                if (!rpmChartCtx) {
+                    console.error('❌ Impossible d\'obtenir le contexte 2D du canvas');
+                    return;
+                }
 
-            drawRpmChart();
+                // Définir la taille du canvas
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+
+                // Initialiser l'historique avec des zéros
+                rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+
+                drawRpmChart();
+                console.log('✅ Graphique RPM initialisé:', rpmChart.width, 'x', rpmChart.height);
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation du graphique RPM:', error);
+            }
         }
 
         // Dessiner le graphique RPM
@@ -1762,19 +1933,40 @@
                 if (response.ok) {
                     const data = await response.json();
 
-                    // Mise à jour de l'état de connexion
-                    const connectionStatus = document.getElementById('connection-status');
-                    if (data.connected) {
-                        connectionStatus.innerHTML = '<span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);"></span>Connecté';
-                        connectionStatus.style.color = '#10b981';
-                    } else {
-                        connectionStatus.innerHTML = '<span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 8px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);"></span>Déconnecté';
-                        connectionStatus.style.color = '#ef4444';
+                    // Mise à jour de l'état de connexion dans la barre du haut
+                    const connectionStatusTop = document.getElementById('connection-status-top');
+                    if (connectionStatusTop) {
+                        // Supprimer les anciennes classes
+                        connectionStatusTop.classList.remove('status-connected', 'status-disconnected');
+
+                        if (data.connected) {
+                            connectionStatusTop.textContent = 'Connecté';
+                            connectionStatusTop.classList.add('status-connected');
+                        } else {
+                            connectionStatusTop.textContent = 'Déconnecté';
+                            connectionStatusTop.classList.add('status-disconnected');
+                        }
                     }
 
-                    document.getElementById('rpm').textContent = data.rpm + ' tr/min';
-                    currentPower = data.power;
-                    updateDisplay();
+                    // Mise à jour du RPM dans la barre du haut
+                    const rpmTop = document.getElementById('rpm-top');
+                    if (rpmTop) {
+                        rpmTop.textContent = data.rpm + ' tr/min';
+                    }
+
+                    // Mise à jour de la puissance dans la barre du haut
+                    const powerTop = document.getElementById('power-top');
+                    if (powerTop) {
+                        powerTop.textContent = data.power + ' W';
+                    }
+
+                    // Ne pas écraser currentPower si on est en train de le modifier
+                    // Seulement le mettre à jour si la différence est significative (plus de 5W)
+                    if (Math.abs(data.power - currentPower) > 5) {
+                        console.log('📡 Mise à jour currentPower depuis le serveur:', currentPower, '→', data.power);
+                        currentPower = data.power;
+                        updateDisplay();
+                    }
 
                     // Ajouter le RPM à l'historique du graphique
                     addRpmToHistory(data.rpm);
@@ -1784,17 +1976,21 @@
 
                     // Auto-start/restart du chrono si RPM > 0
                     if (data.rpm > 0 && !isTimerRunning) {
+                        console.log('🎬 Démarrage automatique du chrono (RPM:', data.rpm, ')');
                         toggleTimer();
                         rpmAutoStarted = true;
                     }
 
                     // Auto-pause si RPM = 0 après avoir démarré
                     if (data.rpm === 0 && rpmAutoStarted && isTimerRunning) {
+                        console.log('⏸️ Pause automatique du chrono (RPM = 0)');
                         toggleTimer();
                     }
+                } else {
+                    console.error('❌ Erreur réponse /status:', response.status);
                 }
             } catch (error) {
-                console.error('Erreur lors de la récupération du statut:', error);
+                console.error('❌ Erreur lors de la récupération du statut:', error);
             }
         }
 
@@ -1892,13 +2088,61 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // Initialisation
-        updateTimerDisplay();
-        updateDisplay();
-        updateStatus();
-        loadPrograms();
-        loadTargetRpm();
-        initRpmChart();
+        // Initialisation - Attendre que le DOM soit complètement chargé
+        function initializeApp() {
+            try {
+                console.log('🚀 Initialisation de l\'application...');
+
+                // Vérifier que les éléments critiques existent
+                const manualControls = document.getElementById('manualControls');
+                const increaseBtn = document.getElementById('increaseBtn');
+                const decreaseBtn = document.getElementById('decreaseBtn');
+                const powerControl = document.getElementById('powerControl');
+
+                console.log('🔍 Éléments trouvés:');
+                console.log('  - manualControls:', manualControls ? 'OK' : '❌ MANQUANT');
+                console.log('  - increaseBtn:', increaseBtn ? 'OK' : '❌ MANQUANT');
+                console.log('  - decreaseBtn:', decreaseBtn ? 'OK' : '❌ MANQUANT');
+                console.log('  - powerControl:', powerControl ? 'OK' : '❌ MANQUANT');
+
+                // Afficher les contrôles manuels par défaut
+                if (manualControls) {
+                    manualControls.style.display = 'block';
+                    console.log('✓ Contrôles manuels affichés');
+                }
+
+                updateTimerDisplay();
+                updateDisplay();
+                loadPrograms();
+                loadTargetRpm();
+
+                // Initialiser le graphique RPM avec un petit délai pour s'assurer que le layout est prêt
+                setTimeout(() => {
+                    initRpmChart();
+                }, 100);
+
+                // Démarrer la mise à jour du statut
+                updateStatus();
+
+                // Définir la puissance par défaut à 25W au démarrage (mode manuel)
+                setPower(25);
+
+                console.log('✅ Application initialisée avec succès');
+                console.log('📊 Variables globales:');
+                console.log('  - currentPower:', currentPower);
+                console.log('  - powerStep:', powerStep);
+                console.log('  - programActive:', programActive);
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation:', error);
+            }
+        }
+
+        // Lancer l'initialisation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
 
         // Redimensionner le graphique si la fenêtre change de taille
         window.addEventListener('resize', () => {

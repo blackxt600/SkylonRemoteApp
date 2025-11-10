@@ -53,34 +53,27 @@ impl BikeController {
 
     async fn try_initial_connection(&self) {
         println!("🔍 Recherche d'appareils Kettler...");
-        println!("💡 Assurez-vous que le vélo est allumé et en mode Bluetooth");
 
-        // Tentatives initiales avec backoff exponentiel
-        let max_attempts = 5;
-        for attempt in 1..=max_attempts {
-            // Délai avec backoff exponentiel : 2, 4, 8, 16 secondes
-            if attempt > 1 {
-                let delay = 2u64.pow(attempt - 2);
-                println!("⏳ Attente de {} secondes avant nouvelle tentative...", delay);
-                tokio::time::sleep(Duration::from_secs(delay)).await;
-            }
-
+        for attempt in 1..=3 {
             match self.attempt_connection().await {
                 Ok(_) => {
-                    println!("✅ Connecté avec succès après {} tentative(s) !", attempt);
+                    println!("✅ Connecté avec succès !");
                     return;
                 }
                 Err(e) => {
-                    eprintln!("⚠️  Tentative {}/{} échouée : {:?}", attempt, max_attempts, e);
+                    eprintln!("⚠️  Tentative {}/3 échouée : {:?}", attempt, e);
+                    if attempt < 3 {
+                        println!("🔄 Nouvelle tentative dans 3 secondes...");
+                        tokio::time::sleep(Duration::from_secs(3)).await;
+                    }
                 }
             }
         }
 
         println!("⚠️  Impossible de se connecter pour le moment.");
         println!("   Le serveur continue de fonctionner. Réessai automatique toutes les 30 secondes...");
-        println!("   Vérifiez que le vélo est allumé et en mode Bluetooth.");
 
-        // Continuer à essayer en arrière-plan avec backoff
+        // Continuer à essayer en arrière-plan
         let controller = self;
         loop {
             tokio::time::sleep(Duration::from_secs(30)).await;
@@ -93,74 +86,14 @@ impl BikeController {
     }
 
     async fn attempt_connection(&self) -> Result<()> {
-        // Nettoyer l'ancienne connexion si elle existe
-        {
-            let mut conn = self.connection.lock().unwrap();
-            if conn.is_some() {
-                println!("🧹 Nettoyage de l'ancienne connexion...");
-                *conn = None;
-                // Laisser le temps au Bluetooth de se libérer
-                drop(conn);
-                std::thread::sleep(Duration::from_millis(500));
-            }
-        }
-
         let connection = Arc::clone(&self.connection);
 
         let new_conn = tokio::task::spawn_blocking(move || {
-            // Essayer plusieurs scans si nécessaire
-            let mut devices = Vec::new();
-            let max_scan_attempts = 5; // Augmenté de 3 à 5
-
-            for scan_attempt in 1..=max_scan_attempts {
-                println!("🔍 Scan Bluetooth {}/{}...", scan_attempt, max_scan_attempts);
-
-                // Délai progressif avant chaque scan (sauf le premier)
-                if scan_attempt > 1 {
-                    let delay = 3 + (scan_attempt - 1); // 3, 4, 5, 6 secondes
-                    println!("   Attente de {} secondes avant le scan...", delay);
-                    std::thread::sleep(Duration::from_secs(delay as u64));
-                }
-
-                match scan_devices() {
-                    Ok(found_devices) => {
-                        if !found_devices.is_empty() {
-                            devices = found_devices;
-                            println!("✓ {} appareil(s) Kettler détecté(s)", devices.len());
-                            break;
-                        } else {
-                            println!("⚠️  Aucun appareil trouvé lors du scan {}/{}", scan_attempt, max_scan_attempts);
-                        }
-                    }
-                    Err(e) => {
-                        println!("⚠️  Erreur scan {}/{} : {:?}", scan_attempt, max_scan_attempts, e);
-                    }
-                }
-            }
-
-            if devices.is_empty() {
-                return Err(anyhow::anyhow!("Aucun appareil Kettler trouvé après {} scans", max_scan_attempts));
-            }
-
+            let devices = scan_devices().map_err(|e| anyhow::anyhow!("Scan failed: {:?}", e))?;
             let device = devices.into_iter().last().ok_or_else(|| anyhow::anyhow!("No Kettler device found"))?;
-            println!("📱 Appareil sélectionné : {}", device.get_name());
-            println!("   Adresse : {}", device.get_addr().to_string());
-
-            // Délai augmenté pour une meilleure stabilité
-            println!("⏳ Attente de 3 secondes pour stabilisation du périphérique...");
-            std::thread::sleep(Duration::from_secs(3));
-
+            println!("📱 Appareil trouvé : {}", device.get_name());
             println!("🔗 Connexion en cours...");
-
-            // Tentative de connexion avec retry
-            let mut conn_result = device.connect();
-            if conn_result.is_err() {
-                println!("⚠️  Première tentative de connexion échouée, réessai dans 2 secondes...");
-                std::thread::sleep(Duration::from_secs(2));
-                conn_result = device.connect();
-            }
-
-            conn_result.map_err(|e| anyhow::anyhow!("Échec connexion après 2 tentatives: {}", e))
+            device.connect().map_err(|e| anyhow::anyhow!("Connect failed: {}", e))
         }).await??;
 
         *connection.lock().unwrap() = Some(new_conn);
