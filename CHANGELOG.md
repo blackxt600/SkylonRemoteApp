@@ -5,6 +5,45 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.7.0] - 2025-11-10
+
+### Ajouté
+- **Disposition en 2 colonnes optimisée pour tablette 11 pouces paysage**
+  - Colonne gauche : Graphique RPM agrandi (250px) + Chronomètre
+  - Colonne droite : Programmes manuel + 9 automatiques dans le même panneau
+- **Barre de statut supérieure harmonisée (50px)**
+  - Date et heure repositionnées sur la gauche
+  - État de connexion en couleur (vert/rouge)
+  - Affichage RPM, puissance et connexion en temps réel
+- **Logs de débogage détaillés**
+  - Logs pour setPower, increasePower, decreasePower
+  - Logs initialisation application et graphique RPM
+  - Logs démarrage/pause automatique chronomètre
+
+### Modifié
+- **Interface utilisateur complètement refondue**
+  - Organisation écran optimisée pour tablette 11 pouces
+  - Boutons inférieurs agrandis à 50px pour meilleure accessibilité
+  - Toutes tailles de police harmonisées (0.9em)
+  - Paddings et border-radius uniformisés
+  - Espacement réduit pour éviter débordements
+- **Amélioration visuelle et ergonomique**
+  - Correction superposition boutons en haut à droite
+  - Timer et contrôles plus compacts
+
+### Corrigé
+- **Pilotage automatique de puissance dans programmes d'entraînement**
+  - Puissance définie dès la minute 0 des programmes
+  - Changements de difficulté appliqués en temps réel
+  - Protection contre écrasement de currentPower par updateStatus
+- **Robustesse du graphique RPM**
+  - Vérification dimensions et retry automatique
+  - Initialisation robuste avec DOMContentLoaded
+
+### Technique
+- `static/index.html` : +518 lignes ajoutées, 341 supprimées (refonte majeure)
+- `src/bike_controller.rs` : Optimisation (-89 lignes)
+
 ## [1.6.0] - 2025-11-09
 
 ### Ajouté

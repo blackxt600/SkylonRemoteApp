@@ -906,11 +906,11 @@
             <div class="left-column">
                 <div class="rpm-chart-panel">
                     <div class="rpm-chart-title">📊 Évolution du RPM</div>
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="color: rgba(255,255,255,0.7); font-size: 0.75em;">RPM Cible:</span>
-                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">−</button>
-                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1em; min-width: 45px; text-align: center;">60</span>
-                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9em;">+</button>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">RPM Cible:</span>
+                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.3em; min-width: 50px;">−</button>
+                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1.3em; min-width: 60px; text-align: center;">60</span>
+                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.3em; min-width: 50px;">+</button>
                     </div>
                     <div class="rpm-chart-container">
                         <canvas id="rpmChart"></canvas>
@@ -954,10 +954,11 @@
                             <button class="btn" id="increaseBtn" onclick="increasePower()">+</button>
                         </div>
                         <div class="step-controls">
+                            <button class="step-btn" onclick="decreasePowerBy25()">-25W</button>
+                            <button class="step-btn" onclick="decreasePowerBy10()">-10W</button>
                             <button class="step-btn active" onclick="setStep(5)">+5W</button>
                             <button class="step-btn" onclick="setStep(10)">+10W</button>
                             <button class="step-btn" onclick="setStep(25)">+25W</button>
-                            <button class="step-btn" onclick="setStep(50)">+50W</button>
                         </div>
                     </div>
 
@@ -1314,49 +1315,49 @@
         // Définition des programmes par défaut (30 minutes, puissance par minute)
         const defaultPrograms = {
             'plat': [
-                100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-                100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-                100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+                25, 25, 25, 35, 35, 35, 35, 35, 35, 35,
+                35, 35, 35, 35, 35, 35, 35, 35, 35, 35,
+                35, 35, 35, 35, 35, 35, 25, 25, 25, 25
             ],
             'vallee': [
-                80, 90, 100, 110, 120, 130, 140, 150, 140, 130,
+                25, 25, 25, 110, 120, 130, 140, 150, 140, 130,
                 100, 90, 110, 130, 150, 160, 150, 130, 110, 120,
-                140, 130, 120, 110, 100, 90, 80, 70, 60, 60
+                140, 130, 120, 110, 100, 90, 80, 25, 25, 25
             ],
             'collines': [
-                60, 70, 80, 90, 110, 130, 150, 170, 160, 140,
+                25, 25, 25, 90, 110, 130, 150, 170, 160, 140,
                 120, 100, 80, 70, 90, 110, 130, 150, 170, 160,
-                140, 120, 100, 80, 70, 60, 50, 50, 50, 50
+                140, 120, 100, 80, 70, 60, 50, 25, 25, 25
             ],
             'montagne': [
-                60, 80, 100, 120, 140, 160, 170, 150, 130, 110,
+                25, 25, 25, 120, 140, 160, 170, 150, 130, 110,
                 90, 80, 100, 120, 140, 160, 180, 160, 140, 120,
-                100, 90, 80, 70, 60, 60, 60, 60, 60, 60
+                100, 90, 80, 70, 60, 60, 60, 25, 25, 25
             ],
             'alpin': [
-                60, 70, 80, 90, 100, 110, 120, 130, 140, 150,
+                25, 25, 25, 90, 100, 110, 120, 130, 140, 150,
                 160, 170, 180, 190, 200, 200, 190, 170, 150, 130,
-                110, 100, 90, 80, 70, 60, 60, 60, 60, 60
+                110, 100, 90, 80, 70, 60, 60, 25, 25, 25
             ],
             'intervalle': [
-                60, 60, 60, 180, 180, 180, 60, 60, 60, 180,
+                25, 25, 25, 180, 180, 180, 60, 60, 60, 180,
                 180, 180, 60, 60, 60, 180, 180, 180, 60, 60,
-                60, 180, 180, 180, 60, 60, 60, 60, 60, 60
+                60, 180, 180, 180, 60, 60, 60, 25, 25, 25
             ],
             'pyramide': [
-                50, 60, 70, 80, 90, 100, 110, 120, 130, 140,
-                150, 160, 170, 180, 190, 180, 170, 160, 150, 140,
-                130, 120, 110, 100, 90, 80, 70, 60, 50, 50
+                25, 25, 25, 40, 50, 60, 70, 80, 90, 100,
+                110, 115, 120, 120, 120, 115, 110, 100, 90, 80,
+                70, 60, 50, 40, 30, 25, 25, 25, 25, 25
             ],
             'changement': [
-                80, 90, 100, 80, 70, 90, 120, 100, 80, 110,
+                25, 25, 25, 80, 70, 90, 120, 100, 80, 110,
                 90, 80, 100, 120, 110, 90, 100, 120, 130, 110,
-                90, 100, 110, 90, 80, 90, 100, 80, 70, 60
+                90, 100, 110, 90, 80, 90, 100, 25, 25, 25
             ],
             'altitude': [
-                70, 80, 90, 110, 100, 120, 140, 110, 90, 120,
+                25, 25, 25, 110, 100, 120, 140, 110, 90, 120,
                 150, 130, 110, 140, 160, 140, 120, 160, 140, 120,
-                100, 110, 130, 120, 100, 80, 70, 60, 60, 60
+                100, 110, 130, 120, 100, 80, 70, 25, 25, 25
             ]
         };
 
@@ -1724,6 +1725,22 @@
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
+        }
+
+        // Diminuer la puissance de 10W directement
+        async function decreasePowerBy10() {
+            console.log('🔽 BOUTON -10W - CLIQUÉ - currentPower:', currentPower);
+            const newPower = Math.max(currentPower - 10, 25);
+            console.log('⬇️ Diminuer puissance de 10W:', currentPower, '→', newPower);
+            await setPower(newPower);
+        }
+
+        // Diminuer la puissance de 25W directement
+        async function decreasePowerBy25() {
+            console.log('🔽 BOUTON -25W - CLIQUÉ - currentPower:', currentPower);
+            const newPower = Math.max(currentPower - 25, 25);
+            console.log('⬇️ Diminuer puissance de 25W:', currentPower, '→', newPower);
+            await setPower(newPower);
         }
 
         // Mettre à jour l'affichage
