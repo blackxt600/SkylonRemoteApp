@@ -2,7 +2,7 @@
 # Script pour ouvrir un terminal et lancer le serveur Rust au démarrage
 
 # Commande : se déplacer dans le dossier et lancer cargo run --release
-COMMAND="cd /home/skylon/Documents/elliptical_server && /home/skylon/.cargo/bin/cargo run --release"
+COMMAND="cd /home/skylon/Documents/SkylonRemoteApp && /home/skylon/.cargo/bin/cargo run --release"
 
 # Ouvre un terminal LXTerminal (terminal par défaut sur Raspberry Pi OS)
 # et exécute la commande

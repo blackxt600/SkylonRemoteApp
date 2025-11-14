@@ -5,6 +5,25 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.7.1] - 2025-11-14
+
+### Supprimé
+- **Nettoyage du projet - suppression de fichiers non essentiels**
+  - Scripts de build/déploiement : `build-on-pi.sh`, `deploy-to-pi.sh`, `docker-build.sh`, `Dockerfile.cross`, `version.sh`
+  - Documentation redondante : `DEPLOYMENT.md`, `README-deploy.md`, `PROGRAMME_ENTRAINEMENT.md`, `SYSTEME_SHUTDOWN_REBOOT.md`
+  - Répertoire `.claude/` (configuration Claude Code)
+  - `Cargo.lock` (régénéré automatiquement lors du build)
+  - Libération de ~2GB d'espace (suppression du répertoire `target/`)
+
+### Modifié
+- **Configuration autostart**
+  - Mise à jour des chemins : `elliptical_server` → `SkylonRemoteApp`
+  - Mise à jour de la description du service systemd
+
+### Technique
+- Projet épuré : seuls les fichiers essentiels (code source, interface web, configuration) sont conservés
+- Structure simplifiée pour faciliter la maintenance
+
 ## [1.7.0] - 2025-11-10
 
 ### Ajouté

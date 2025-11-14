@@ -2,7 +2,7 @@
 
 ## Le script est déjà configuré pour :
 - Utilisateur : **skylon**
-- Commande : `cd /home/skylon/Documents/elliptical_server && cargo run --release`
+- Commande : `cd /home/skylon/Documents/SkylonRemoteApp && cargo run --release`
 
 ## Étape 1 : Copier les fichiers sur la Raspberry Pi
 

@@ -1,5 +1,5 @@
 [Unit]
-Description=Elliptical Server (Rust Cargo) au démarrage
+Description=SkylonRemoteApp (Rust Cargo) au démarrage
 After=graphical.target
 
 [Service]
