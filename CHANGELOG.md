@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.8.2] - 2025-11-16
+
+### Added
+- **System shutdown/reboot configuration documentation**
+  - `SYSTEM_SHUTDOWN_REBOOT.md` - Comprehensive guide for configuring sudo permissions
+  - Step-by-step instructions for passwordless shutdown/reboot
+  - Security considerations and best practices
+  - Testing procedures and troubleshooting section
+  - Alternative systemd service method
+  - Revert instructions
+
+### Changed
+- **Updated documentation references**
+  - `CLAUDE.md` - Added references to shutdown/reboot configuration in API endpoints and deployment sections
+  - `README.md` - Added link to SYSTEM_SHUTDOWN_REBOOT.md in Support section
+
 ## [1.8.1] - 2025-11-16
 
 ### Changed
