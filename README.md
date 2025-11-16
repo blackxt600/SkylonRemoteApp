@@ -224,28 +224,36 @@ This project is licensed under the MIT License.
 
 ## 🤝 Contribution & Open Source Philosophy
 
-**This repository is meant to be shared, forked, and improved by the community!**
+**This repository is shared "as-is" for the community to take, improve, and make their own!**
 
-Open source is not just about code—it's about collaboration, learning, and building something better together. This project exists because of the amazing work shared by others (like the [kdri](https://github.com/kaegi/kdri) library), and it should continue to evolve through collective effort.
+This project was built to solve a specific need and is now released to the world. **The original author will not provide bug fixes or ongoing maintenance.** Instead, this code is offered as a foundation for you to build upon, learn from, and adapt to your needs.
 
-### Why You Should Contribute
+Open source is about empowerment—taking something that works and making it better, fixing what's broken, and sharing improvements with others who face similar challenges. This project exists because of the incredible work shared by others (like the [kdri](https://github.com/kaegi/kdri) library), and now it's **your turn** to carry the torch forward.
 
-- 🚀 **Make it better**: Your ideas and improvements can help thousands of users
-- 🧠 **Learn together**: Share knowledge, discover new techniques, learn Rust and embedded systems
-- 🌍 **Build community**: Connect with other developers passionate about fitness tech and open hardware
-- 💡 **Innovate freely**: No corporate restrictions—just pure innovation and creativity
+### This Is YOUR Project Now
 
-### How to Contribute
+- 🔧 **Fix bugs**: Found an issue? Fix it and share your solution with others
+- 🚀 **Add features**: Need something new? Build it and submit a pull request
+- 📚 **Improve docs**: Make the documentation better, clearer, more complete
+- 🌍 **Port to new devices**: Make it work with other Kettler models or fitness equipment
+- 🎨 **Redesign the UI**: Create a better interface that fits your needs
+- 🔬 **Experiment freely**: Try new approaches, test wild ideas, break things and learn
 
-- **Star ⭐ this repository** to show support and help others discover it
-- **Fork and experiment** - Try new features, test on different devices, break things and fix them
-- **Share your improvements** - Open pull requests, no matter how small
-- **Report issues** - Found a bug? Have an idea? Open an issue!
-- **Spread the word** - Blog about it, share it on social media, tell your maker friends
+### How to Take Ownership
 
-**Together, we can build the best open-source fitness equipment control system out there!** 💪
+- **Fork this repository** - Make it yours, customize it, improve it
+- **Share your improvements** - Open pull requests so others can benefit
+- **Create your own version** - Build something completely different based on this code
+- **Help each other** - Answer questions, review PRs, collaborate with other contributors
+- **Become a maintainer** - If you're passionate about this project, consider maintaining your own fork
 
-Your contribution, no matter how small, makes a difference. Let's make this project awesome together!
+### No Promises, Just Possibilities
+
+⚠️ **Important**: There is no guarantee of support, bug fixes, or updates from the original author. This is community-driven from now on. If you need something fixed or improved, **you** have the power to make it happen.
+
+**This isn't just an invitation to contribute—it's a transfer of ownership to the community.**
+
+The code is here. The tools are available. The possibilities are endless. **What will YOU build with it?** 🚀
 
 ## 📞 Support
 
