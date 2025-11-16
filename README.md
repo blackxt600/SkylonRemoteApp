@@ -212,6 +212,12 @@ git log --oneline --decorate
 git diff v1.0.0 v1.1.0
 ```
 
+## 🙏 Credits
+
+This project would not have been possible without the incredible work shared in the [kdri](https://github.com/kaegi/kdri) repository by [@kaegi](https://github.com/kaegi). The kdri library (Kettler Device Rust Interface) provides the essential Bluetooth communication protocol implementation for Kettler fitness devices.
+
+Thank you for making this library open source! 🎉
+
 ## 📄 License
 
 This project is licensed under the MIT License.
