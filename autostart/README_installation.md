@@ -32,10 +32,31 @@ sudo systemctl enable startup-command.service
 sudo systemctl start startup-command.service
 ```
 
-## Étape 3 : Vérifier le statut
+## Étape 3 : Configurer la gestion des logs (IMPORTANT pour Raspberry Pi)
+
+Pour éviter que les logs remplissent le disque :
+
+```bash
+# Créer le dossier de configuration journald
+sudo mkdir -p /etc/systemd/journald.conf.d/
+
+# Copier la configuration de limitation des logs
+scp journald-limit.conf skylon@raspberry-pi-ip:/tmp/
+ssh skylon@raspberry-pi-ip "sudo cp /tmp/journald-limit.conf /etc/systemd/journald.conf.d/elliptical.conf"
+
+# Redémarrer journald et nettoyer
+ssh skylon@raspberry-pi-ip "sudo systemctl restart systemd-journald && sudo journalctl --vacuum-size=50M"
+```
+
+**Voir GESTION_LOGS.md pour plus de détails.**
+
+## Étape 4 : Vérifier le statut
 
 ```bash
 sudo systemctl status startup-command.service
+
+# Vérifier l'utilisation disque des logs
+journalctl --disk-usage
 ```
 
 ## Alternative : Autostart (méthode simple sans systemd)

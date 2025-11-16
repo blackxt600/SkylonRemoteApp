@@ -1,0 +1,25 @@
+[Unit]
+Description=SkylonRemoteApp (Rust Cargo) au démarrage
+After=graphical.target
+
+[Service]
+Type=simple
+User=skylon
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/skylon/.Xauthority
+ExecStart=/home/skylon/launch_terminal.sh
+Restart=on-failure
+
+# Limiter les logs de ce service
+StandardOutput=journal
+StandardError=journal
+
+# Ne garder que les logs importants (niveau warning et erreur)
+# SyslogLevel=warning
+
+# Alternative : rediriger vers null (pas de logs du tout)
+# StandardOutput=null
+# StandardError=null
+
+[Install]
+WantedBy=graphical.target

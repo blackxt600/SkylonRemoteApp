@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Rust-based HTTP server for controlling Kettler elliptical trainers via Bluetooth. The project includes a modern web interface optimized for 11" tablets and supports custom training programs with automatic power adjustments. The server wraps the `kdri` library (Kettler Device Rust Interface) and exposes a REST API using Actix-web.
 
+**Note**: This project uses Rust edition 2024 in Cargo.toml, which requires a recent Rust toolchain.
+
 ## Build and Run Commands
 
 ```bash
@@ -113,7 +115,7 @@ Uses `anyhow::Result` for error handling. Bluetooth connection failures are non-
   - Program statistics summary at completion
 - Program manager: `static/programs.html` - Create custom training programs
 - Optimized for 11" tablets in landscape mode
-- System shutdown/reboot buttons require sudo configuration (see SYSTEME_SHUTDOWN_REBOOT.md)
+- System shutdown/reboot buttons require sudo passwordless configuration for the user running the server
 
 ### Training Programs
 
@@ -157,8 +159,18 @@ For systemd auto-start configuration, see:
 - `autostart/startup-command.service` - Systemd service file
 - `autostart/launch_terminal.sh` - Launch script
 - `autostart/README_installation.md` - Installation instructions
+- `autostart/GESTION_LOGS.md` - Log management for Raspberry Pi (important to prevent disk space issues)
 
-For sudo configuration of shutdown/reboot, see `SYSTEME_SHUTDOWN_REBOOT.md`.
+For shutdown/reboot functionality, configure sudo to allow passwordless execution of `/sbin/shutdown` and `/sbin/reboot` for the user running the server.
+
+### Log Management (Important for Raspberry Pi)
+
+The application outputs logs to stdout/stderr which are captured by systemd's journald. Without configuration, logs can grow to 200-300 MB and fill limited disk space on Raspberry Pi.
+
+**Recommended configuration:**
+- Use `autostart/journald-limit.conf` to limit journal size to 50 MB
+- Set up weekly log cleanup with `autostart/cleanup-logs.sh`
+- See `autostart/GESTION_LOGS.md` for complete setup instructions
 
 ## Versioning
 

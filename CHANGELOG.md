@@ -5,6 +5,34 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.8.0] - 2025-11-16
+
+### Ajouté
+- **Gestion des logs pour Raspberry Pi avec espace disque limité**
+  - `autostart/journald-limit.conf` - Configuration systemd pour limiter journald à 50 Mo maximum
+  - `autostart/cleanup-logs.sh` - Script de nettoyage manuel/automatique des logs (exécutable)
+  - `autostart/GESTION_LOGS.md` - Documentation complète sur la gestion des logs
+  - `autostart/startup-command-minimal-logs.service` - Service alternatif avec logs réduits
+  - Protection contre le remplissage du disque (les logs peuvent atteindre 200-300 Mo sans configuration)
+- **Documentation améliorée**
+  - Section "Log Management" ajoutée dans CLAUDE.md
+  - Note sur l'utilisation de Rust edition 2024 dans CLAUDE.md
+  - Étape 3 ajoutée dans README_installation.md pour configurer les logs
+
+### Modifié
+- **CLAUDE.md** - Corrections et améliorations
+  - Suppression des références au fichier inexistant SYSTEME_SHUTDOWN_REBOOT.md
+  - Remplacement par des instructions claires pour la configuration sudo
+  - Ajout de section détaillée sur la gestion des logs pour déploiement Raspberry Pi
+- **README_installation.md**
+  - Ajout d'une étape obligatoire pour configurer la limitation des logs
+  - Commandes de vérification de l'espace disque utilisé
+
+### Technique
+- Configuration journald : limite de 50 Mo, rotation après 10 Mo, rétention 1 semaine
+- Script cleanup : nettoyage automatique via cron (recommandé hebdomadaire)
+- Logs toujours disponibles pour diagnostic contrairement à redirection vers /dev/null
+
 ## [1.7.1] - 2025-11-14
 
 ### Supprimé
