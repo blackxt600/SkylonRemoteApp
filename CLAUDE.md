@@ -150,8 +150,8 @@ The kdri library auto-detects device type and polls appropriate values (RPM, pow
 - `GET /program/active` - Get active program state
 
 ### System Control
-- `POST /system/shutdown` - Shutdown Raspberry Pi (requires sudo config)
-- `POST /system/reboot` - Reboot Raspberry Pi (requires sudo config)
+- `POST /system/shutdown` - Shutdown Raspberry Pi (requires sudo config - see SYSTEM_SHUTDOWN_REBOOT.md)
+- `POST /system/reboot` - Reboot Raspberry Pi (requires sudo config - see SYSTEM_SHUTDOWN_REBOOT.md)
 
 ## Deployment
 
@@ -161,7 +161,7 @@ For systemd auto-start configuration, see:
 - `autostart/README_installation.md` - Installation instructions
 - `autostart/GESTION_LOGS.md` - Log management for Raspberry Pi (important to prevent disk space issues)
 
-For shutdown/reboot functionality, configure sudo to allow passwordless execution of `/sbin/shutdown` and `/sbin/reboot` for the user running the server.
+For shutdown/reboot functionality, see `SYSTEM_SHUTDOWN_REBOOT.md` for detailed sudo configuration instructions to allow passwordless execution of `/sbin/shutdown` and `/sbin/reboot` for the user running the server.
 
 ### Log Management (Important for Raspberry Pi)
 

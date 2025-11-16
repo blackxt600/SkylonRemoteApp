@@ -232,6 +232,7 @@ For questions or issues, see:
 - [CLAUDE.md](CLAUDE.md) for development instructions
 - [CHANGELOG.md](CHANGELOG.md) for version history
 - [autostart/GESTION_LOGS.md](autostart/GESTION_LOGS.md) for log management on Raspberry Pi
+- [SYSTEM_SHUTDOWN_REBOOT.md](SYSTEM_SHUTDOWN_REBOOT.md) for shutdown/reboot configuration
 
 ---
 
