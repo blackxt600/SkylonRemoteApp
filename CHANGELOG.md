@@ -1,9 +1,33 @@
 # Changelog
 
-Toutes les modifications notables de ce projet seront documentées dans ce fichier.
+All notable changes to this project will be documented in this file.
 
-Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
-et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [1.8.1] - 2025-11-16
+
+### Changed
+- **Complete English translation of all documentation**
+  - `autostart/journald-limit.conf` - English comments
+  - `autostart/cleanup-logs.sh` - English comments and messages
+  - `autostart/GESTION_LOGS.md` - Complete English translation
+  - `autostart/startup-command-minimal-logs.service` - English comments
+  - `README.md` - Complete English translation
+  - `CHANGELOG.md` - English translation (this file)
+
+### Added
+- **Credits section in README.md**
+  - Acknowledgment for the kdri library by @kaegi
+  - Recognition of the essential Bluetooth protocol implementation
+
+### Fixed
+- **README.md corrections**
+  - Power range corrected: 0-250W → 25-400W (matches actual code)
+  - Current version updated: 1.0.0 → 1.8.0
+  - Date updated to 2025-11-16
+  - Added GitHub repository URL
+  - Added link to log management documentation
 
 ## [1.8.0] - 2025-11-16
 

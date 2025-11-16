@@ -198,3 +198,4 @@ autostart/              # Systemd auto-start configuration
 - Requires `/dev/rfcomm` or native Bluetooth stack access
 - System shutdown/reboot endpoints require sudo configuration
 - Frontend program customization stored in localStorage (not persisted server-side)
+- toujours faire les fichiers, commentaires et explications en anglais dans mes fichiers

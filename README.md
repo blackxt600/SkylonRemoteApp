@@ -235,5 +235,5 @@ For questions or issues, see:
 
 ---
 
-**Current Version:** 1.8.0
+**Current Version:** 1.8.1
 **Date:** 2025-11-16
