@@ -1,40 +1,40 @@
-# Elliptical Server - Serveur de Contrôle Vélo Elliptique Kettler
+# Elliptical Server - Kettler Elliptical Bike Control Server
 
-Serveur HTTP en Rust pour contrôler un vélo elliptique Kettler via Bluetooth avec une interface web moderne.
+HTTP server in Rust to control a Kettler elliptical bike via Bluetooth with a modern web interface.
 
-## 📋 Table des matières
+## 📋 Table of Contents
 
-- [Fonctionnalités](#fonctionnalités)
+- [Features](#features)
 - [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Programmes d'entraînement](#programmes-dentraînement)
+- [Usage](#usage)
+- [Training Programs](#training-programs)
 - [API](#api)
-- [Développement](#développement)
+- [Development](#development)
 - [Versioning](#versioning)
 
-## ✨ Fonctionnalités
+## ✨ Features
 
 ### Backend
-- 🦀 Serveur Rust avec Actix-web
-- 🔵 Communication Bluetooth avec vélos elliptiques Kettler (RFCOMM)
-- 📡 API REST pour contrôle à distance
-- ⚡ Mise à jour en temps réel des données
+- 🦀 Rust server with Actix-web
+- 🔵 Bluetooth communication with Kettler elliptical bikes (RFCOMM)
+- 📡 REST API for remote control
+- ⚡ Real-time data updates
 
-### Interface Web
-- 🎨 Design moderne dark glassmorphisme
-- 📱 Responsive pour tablette 11" en mode paysage
-- ⏱ Chronomètre avec auto-start/pause basé sur RPM
-- 📊 Histogramme visuel de progression
-- 🎯 9 programmes d'entraînement prédéfinis
-- 🔧 Contrôle de difficulté par paliers de 5W
-- 🖥 Mode plein écran
-- 📈 Affichage temps réel: RPM, Puissance, État de connexion
+### Web Interface
+- 🎨 Modern dark glassmorphism design
+- 📱 Responsive for 11" tablet in landscape mode
+- ⏱ Timer with auto-start/pause based on RPM
+- 📊 Visual progress histogram
+- 🎯 9 predefined training programs
+- 🔧 Difficulty control in 5W increments
+- 🖥 Fullscreen mode
+- 📈 Real-time display: RPM, Power, Connection Status
 
 ## 🚀 Installation
 
-### Prérequis
+### Prerequisites
 ```bash
-# Rust (dernière version stable)
+# Rust (latest stable version)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Bluetooth
@@ -43,60 +43,60 @@ sudo apt-get install bluez libbluetooth-dev
 
 ### Compilation
 ```bash
-# Clone du projet
-git clone <votre-repo>
-cd elliptical_server
+# Clone the project
+git clone https://github.com/blackxt600/SkylonRemoteApp.git
+cd SkylonRemoteApp
 
 # Build
 cargo build --release
 
-# Exécution
+# Run
 cargo run --release
 ```
 
-Le serveur sera accessible sur `http://0.0.0.0:8080`
+The server will be accessible at `http://0.0.0.0:8080`
 
-## 📱 Utilisation
+## 📱 Usage
 
-1. **Connexion Bluetooth** : Associez votre vélo Kettler à `/dev/rfcomm0`
-2. **Démarrer le serveur** : `cargo run`
-3. **Ouvrir l'interface** : Naviguez vers `http://localhost:8080`
-4. **Mode plein écran** : Cliquez sur le bouton ⛶ en haut à droite
+1. **Bluetooth Connection**: Pair your Kettler bike to `/dev/rfcomm0`
+2. **Start the server**: `cargo run`
+3. **Open the interface**: Navigate to `http://localhost:8080`
+4. **Fullscreen mode**: Click the ⛶ button in the top right
 
-### Modes de contrôle
+### Control Modes
 
-#### Mode Manuel
-- Contrôle direct de la puissance avec boutons +/-
-- Pas ajustables : 5W, 10W, 25W, 50W
-- Plage : 0-250W
+#### Manual Mode
+- Direct power control with +/- buttons
+- Adjustable steps: 5W, 10W, 25W, 50W
+- Range: 25-400W
 
-#### Mode Programme
-- Sélectionnez un des 9 programmes
-- Ajustez la difficulté : -100W à +100W par paliers de 5W
-- Le chronomètre démarre/pause automatiquement selon votre activité (RPM)
+#### Program Mode
+- Select one of the 9 programs
+- Adjust difficulty: -100W to +100W in 5W increments
+- Timer automatically starts/pauses based on your activity (RPM)
 
-## 🏋️ Programmes d'entraînement
+## 🏋️ Training Programs
 
-Chaque programme dure **30 minutes** avec ajustement de puissance par minute :
+Each program lasts **30 minutes** with power adjustment per minute:
 
-| Programme | Description | Intensité |
-|-----------|-------------|-----------|
-| **Plat** | Effort constant modéré | ⚡⚡ |
-| **Vallée** | Variations douces | ⚡⚡⚡ |
-| **Collines** | Deux collines distinctes | ⚡⚡⚡⚡ |
-| **Montagne** | Deux sommets | ⚡⚡⚡⚡ |
-| **Col Alpin** | Montée progressive | ⚡⚡⚡⚡⚡ |
-| **Intervalle** | Intervalles intenses | ⚡⚡⚡⚡⚡ |
-| **Pyramide** | Montée et descente symétrique | ⚡⚡⚡⚡ |
-| **Changement** | Rythme varié | ⚡⚡⚡ |
-| **Altitude** | Variations irrégulières | ⚡⚡⚡⚡ |
+| Program | Description | Intensity |
+|---------|-------------|-----------|
+| **Flat** | Moderate constant effort | ⚡⚡ |
+| **Valley** | Gentle variations | ⚡⚡⚡ |
+| **Hills** | Two distinct hills | ⚡⚡⚡⚡ |
+| **Mountain** | Two peaks | ⚡⚡⚡⚡ |
+| **Alpine Pass** | Progressive climb | ⚡⚡⚡⚡⚡ |
+| **Interval** | Intense intervals | ⚡⚡⚡⚡⚡ |
+| **Pyramid** | Symmetrical climb and descent | ⚡⚡⚡⚡ |
+| **Change** | Varied rhythm | ⚡⚡⚡ |
+| **Altitude** | Irregular variations | ⚡⚡⚡⚡ |
 
 ## 🔌 API
 
 ### GET /status
-Récupère l'état actuel du vélo
+Get the current bike status
 
-**Réponse :**
+**Response:**
 ```json
 {
   "connected": true,
@@ -107,123 +107,127 @@ Récupère l'état actuel du vélo
 ```
 
 ### POST /power/{level}
-Définit la puissance cible (0-250W)
+Set the target power (25-400W)
 
-**Exemple :**
+**Example:**
 ```bash
 curl -X POST http://localhost:8080/power/120
 ```
 
-## 🛠 Développement
+## 🛠 Development
 
-### Structure du projet
+### Project Structure
 ```
-elliptical_server/
+SkylonRemoteApp/
 ├── src/
-│   ├── main.rs              # Serveur HTTP
-│   ├── bike_controller.rs   # Contrôleur Bluetooth
-│   └── main-example.rs      # Exemple CLI
+│   ├── main.rs              # HTTP server
+│   ├── bike_controller.rs   # Bluetooth controller
+│   ├── training_program.rs  # Training program structures
+│   └── main-example.rs      # CLI example
 ├── static/
-│   └── index.html           # Interface web
-├── Cargo.toml               # Dépendances Rust
-├── CHANGELOG.md             # Historique des versions
-└── VERSION                  # Version actuelle
+│   ├── index.html           # Web interface
+│   └── programs.html        # Program manager
+├── autostart/               # Systemd autostart config
+├── Cargo.toml               # Rust dependencies
+├── CHANGELOG.md             # Version history
+└── VERSION                  # Current version
 ```
 
-### Dépendances principales
-- `actix-web` - Framework web
-- `tokio` - Runtime async
-- `kdri` - Bibliothèque Kettler Bluetooth
-- `serde` - Sérialisation JSON
-- `anyhow` - Gestion d'erreurs
+### Main Dependencies
+- `actix-web` - Web framework
+- `tokio` - Async runtime
+- `kdri` - Kettler Bluetooth library
+- `serde` - JSON serialization
+- `anyhow` - Error handling
 
 ## 📦 Versioning
 
-Ce projet utilise [Semantic Versioning](https://semver.org/lang/fr/) (MAJOR.MINOR.PATCH).
+This project uses [Semantic Versioning](https://semver.org/) (MAJOR.MINOR.PATCH).
 
-### Comment versionner
+### How to Version
 
-#### 1. Mettre à jour la version
+#### 1. Update the version
 ```bash
-# Modifier le fichier VERSION
+# Modify the VERSION file
 echo "1.1.0" > VERSION
 ```
 
-#### 2. Mettre à jour CHANGELOG.md
+#### 2. Update CHANGELOG.md
 ```markdown
 ## [1.1.0] - 2025-01-27
 
-### Ajouté
-- Nouvelle fonctionnalité X
+### Added
+- New feature X
 
-### Modifié
-- Amélioration de Y
+### Changed
+- Improvement to Y
 
-### Corrigé
+### Fixed
 - Bug Z
 ```
 
-#### 3. Commit et tag
+#### 3. Commit and tag
 ```bash
-# Commit des changements
+# Commit changes
 git add -A
-git commit -m "Release v1.1.0 - Description des changements"
+git commit -m "Release v1.1.0 - Description of changes"
 
-# Créer le tag
+# Create tag
 git tag -a v1.1.0 -m "Version 1.1.0"
 
-# Pousser (si dépôt distant)
-git push origin master --tags
+# Push (if remote repository)
+git push origin main --tags
 ```
 
-### Convention de versioning
+### Versioning Convention
 
-- **MAJOR** (1.x.x) : Changements incompatibles de l'API
-- **MINOR** (x.1.x) : Nouvelles fonctionnalités rétrocompatibles
-- **PATCH** (x.x.1) : Corrections de bugs rétrocompatibles
+- **MAJOR** (1.x.x): Incompatible API changes
+- **MINOR** (x.1.x): New backward-compatible features
+- **PATCH** (x.x.1): Backward-compatible bug fixes
 
-### Exemples
+### Examples
 ```bash
 # Bug fix
 1.0.0 → 1.0.1
 
-# Nouvelle fonctionnalité
+# New feature
 1.0.1 → 1.1.0
 
-# Changement majeur (breaking change)
+# Breaking change
 1.1.0 → 2.0.0
 ```
 
-### Voir l'historique
+### View History
 ```bash
-# Liste des versions
+# List versions
 git tag -l
 
-# Détails d'une version
+# Version details
 git show v1.0.0
 
-# Log avec tags
+# Log with tags
 git log --oneline --decorate
 
-# Différences entre versions
+# Differences between versions
 git diff v1.0.0 v1.1.0
 ```
 
-## 📄 Licence
+## 📄 License
 
-Ce projet est sous licence MIT.
+This project is licensed under the MIT License.
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou une pull request.
+Contributions are welcome! Feel free to open an issue or pull request.
 
 ## 📞 Support
 
-Pour toute question ou problème, consultez :
-- Le fichier [CLAUDE.md](CLAUDE.md) pour les instructions de développement
-- Le fichier [CHANGELOG.md](CHANGELOG.md) pour l'historique des versions
+For questions or issues, see:
+- [CLAUDE.md](CLAUDE.md) for development instructions
+- [CHANGELOG.md](CHANGELOG.md) for version history
+- [autostart/GESTION_LOGS.md](autostart/GESTION_LOGS.md) for log management on Raspberry Pi
 
 ---
 
-**Version actuelle :** 1.0.0
-**Date :** 2025-01-26
+**Current Version:** 1.8.0
+**Date:** 2025-11-16
