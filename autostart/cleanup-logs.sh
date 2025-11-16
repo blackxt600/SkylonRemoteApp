@@ -1,18 +1,18 @@
 #!/bin/bash
-# Script de nettoyage des logs pour Raspberry Pi
+# Log cleanup script for Raspberry Pi
 
-echo "🧹 Nettoyage des logs..."
+echo "🧹 Cleaning logs..."
 
-# Nettoyer les logs journald (garder seulement 3 jours)
+# Clean journald logs (keep only 3 days)
 sudo journalctl --vacuum-time=3d
 
-# Nettoyer les logs de plus de 50 Mo
+# Clean logs larger than 50 MB
 sudo journalctl --vacuum-size=50M
 
-# Vérifier l'espace disque utilisé par les logs
+# Check disk space used by logs
 echo ""
-echo "📊 Espace disque utilisé par les logs :"
+echo "📊 Disk space used by logs:"
 journalctl --disk-usage
 
 echo ""
-echo "✅ Nettoyage terminé"
+echo "✅ Cleanup completed"

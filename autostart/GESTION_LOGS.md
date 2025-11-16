@@ -1,92 +1,92 @@
-# Gestion des logs sur Raspberry Pi
+# Log Management on Raspberry Pi
 
-## Problème
+## Problem
 
-Le programme génère des logs qui peuvent remplir le disque de la Raspberry Pi :
-- Tentatives de connexion Bluetooth toutes les 30 secondes
-- Mises à jour fréquentes
-- Messages d'état du programme
+The application generates logs that can fill up the Raspberry Pi's disk:
+- Bluetooth connection attempts every 30 seconds
+- Frequent updates
+- Program status messages
 
-Sur une Raspberry Pi avec peu d'espace disque, **journald peut utiliser 200-300 Mo** sans limitation.
+On a Raspberry Pi with limited disk space, **journald can use 200-300 MB** without limitation.
 
-## Solutions recommandées
+## Recommended Solutions
 
-### Solution 1 : Limiter journald (FORTEMENT RECOMMANDÉ)
+### Solution 1: Limit journald (STRONGLY RECOMMENDED)
 
 ```bash
-# Copier la configuration
+# Copy the configuration
 sudo cp journald-limit.conf /etc/systemd/journald.conf.d/elliptical.conf
 
-# Redémarrer journald
+# Restart journald
 sudo systemctl restart systemd-journald
 
-# Nettoyer les anciens logs immédiatement
+# Clean old logs immediately
 sudo journalctl --vacuum-size=50M
 ```
 
-Cela limite l'utilisation disque à **50 Mo maximum**.
+This limits disk usage to **50 MB maximum**.
 
-### Solution 2 : Script de nettoyage hebdomadaire
+### Solution 2: Weekly cleanup script
 
 ```bash
-# Rendre le script exécutable
+# Make the script executable
 chmod +x cleanup-logs.sh
 
-# Ajouter à crontab pour exécution hebdomadaire (chaque dimanche à 2h)
+# Add to crontab for weekly execution (every Sunday at 2 AM)
 sudo crontab -e
 ```
 
-Ajoutez cette ligne :
+Add this line:
 ```
 0 2 * * 0 /home/skylon/Documents/SkylonRemoteApp/autostart/cleanup-logs.sh
 ```
 
-### Solution 3 : Désactiver complètement les logs du service (NON RECOMMANDÉ)
+### Solution 3: Completely disable service logs (NOT RECOMMENDED)
 
-Si vous n'avez vraiment pas besoin des logs :
+If you really don't need logs:
 
 ```bash
-# Utiliser le service avec logs minimaux
+# Use the service with minimal logs
 sudo cp startup-command-minimal-logs.service /etc/systemd/system/startup-command.service
 
-# Modifier pour utiliser StandardOutput=null et StandardError=null
+# Modify to use StandardOutput=null and StandardError=null
 ```
 
-⚠️ **Attention** : Vous ne pourrez plus diagnostiquer les problèmes de connexion Bluetooth !
+⚠️ **Warning**: You will no longer be able to diagnose Bluetooth connection issues!
 
-## Vérifier l'espace disque utilisé
+## Check disk space usage
 
 ```bash
-# Voir l'utilisation des logs
+# View log usage
 journalctl --disk-usage
 
-# Voir l'espace disque total
+# View total disk space
 df -h
 
-# Voir les logs du service
+# View service logs
 sudo journalctl -u startup-command.service --since "1 hour ago"
 ```
 
-## Nettoyage manuel
+## Manual cleanup
 
 ```bash
-# Nettoyer les logs de plus de 3 jours
+# Clean logs older than 3 days
 sudo journalctl --vacuum-time=3d
 
-# Nettoyer pour garder seulement 30 Mo
+# Clean to keep only 30 MB
 sudo journalctl --vacuum-size=30M
 
-# Supprimer tous les logs archivés
+# Delete all archived logs
 sudo journalctl --rotate
 sudo journalctl --vacuum-time=1s
 ```
 
-## Recommandation finale
+## Final Recommendation
 
-Pour une Raspberry Pi avec peu d'espace :
+For a Raspberry Pi with limited space:
 
-1. ✅ **Appliquer la configuration journald** (limite à 50 Mo)
-2. ✅ **Configurer le nettoyage hebdomadaire** via cron
-3. 💡 **Vérifier l'espace disque régulièrement** avec `df -h`
+1. ✅ **Apply journald configuration** (limit to 50 MB)
+2. ✅ **Configure weekly cleanup** via cron
+3. 💡 **Check disk space regularly** with `df -h`
 
-Avec ces mesures, les logs n'utiliseront jamais plus de 50 Mo.
+With these measures, logs will never use more than 50 MB.
