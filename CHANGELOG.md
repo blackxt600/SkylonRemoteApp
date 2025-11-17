@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] - 2025-11-17
+
+### Changed
+- **Adjusted predefined training program intensity levels** (`static/index.html`)
+  - Reduced power levels across most programs for more accessible workouts
+  - "Plat" (Flat): Increased middle section (35W → 50W)
+  - "Vallée" (Valley): Reduced peak intensity (150-170W → 110-140W max)
+  - "Collines" (Hills): Reduced peak intensity (170W → 130W max)
+  - "Montagne" (Mountain): Moderate reduction, maintained 180W peak
+  - "Alpin" (Alpine): Significant reduction (200W → 160W max)
+  - "Intervalle" (Interval): Restructured with lower intensity (180W → 125W max)
+  - "Pyramide" (Pyramid): No change
+  - "Changement" (Change): Reduced intensity (130W → 110W max)
+  - "Altitude": Reduced intensity (160W → 140W max)
+- **Documentation improvement** (`CLAUDE.md`)
+  - Updated last line to English for consistency
+
 ## [1.8.2] - 2025-11-16
 
 ### Added
