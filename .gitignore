@@ -1,0 +1,25 @@
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# OS
+.DS_Store
+._*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node/Web (if applicable in future)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Temporary
+tmp/
+*.tmp
+*.bak
+*.broken

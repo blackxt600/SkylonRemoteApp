@@ -1,0 +1,2279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Vélo Elliptique</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f1e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            animation: gradient-shift 15s ease infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, -5%); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            max-width: 100%;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            margin: 60px 8px 60px 8px;
+        }
+
+        /* Layout en grille optimisé pour tablette 11 pouces paysage - 2 colonnes */
+        @media (min-width: 800px) and (orientation: landscape) {
+            .container {
+                padding: 15px;
+                max-width: 1400px;
+            }
+
+            .main-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                align-items: start;
+            }
+
+            .left-column {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .right-column {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .status-panel {
+                margin-bottom: 0;
+                padding: 15px;
+            }
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            letter-spacing: 0.3px;
+        }
+
+        .status-value {
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.3em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-panel {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .timer-panel {
+                margin-bottom: 0;
+                padding: 18px;
+            }
+        }
+
+        .timer-display {
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            font-family: 'Inter', monospace;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .timer-display {
+                font-size: 2.5em;
+                margin-bottom: 12px;
+            }
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.95);
+            color: #8b5cf6;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            background: white;
+        }
+
+        .timer-btn:active {
+            transform: translateY(0);
+        }
+
+        .timer-btn.running {
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
+            color: white;
+        }
+
+        .program-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .program-panel {
+                margin-bottom: 0;
+                padding: 15px;
+            }
+        }
+
+        .program-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .program-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .program-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1 1 calc(20% - 6px);
+            min-width: 80px;
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+        }
+
+        .program-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .program-btn.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .program-info {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .difficulty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .difficulty-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .difficulty-btn:active {
+            transform: translateY(0);
+        }
+
+        .difficulty-display {
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .difficulty-label {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .difficulty-value {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .current-power-display {
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-top: 12px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+
+        .current-power-label {
+            font-size: 0.75em;
+            opacity: 0.85;
+            margin-bottom: 5px;
+            letter-spacing: 0.3px;
+            font-weight: 500;
+        }
+
+        .current-power-value {
+            font-size: 2em;
+            font-weight: 800;
+            font-family: 'Inter', monospace;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .current-power-unit {
+            font-size: 1em;
+            opacity: 0.85;
+            margin-left: 5px;
+            font-weight: 600;
+        }
+
+        .histogram-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .histogram-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px 4px;
+            font-size: 0.65em;
+            color: rgba(255, 255, 255, 0.4);
+            min-width: 30px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .program-histogram {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 120px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow-x: auto;
+            flex: 1;
+            position: relative;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .program-histogram {
+                height: 140px;
+            }
+        }
+
+        .program-histogram::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 10px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .histogram-bar {
+            flex: 1;
+            min-width: 8px;
+            background: linear-gradient(180deg, #8b5cf6 0%, #a78bfa 100%);
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            opacity: 0.25;
+        }
+
+        .histogram-bar.completed {
+            background: linear-gradient(180deg, #10b981 0%, #34d399 100%);
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .histogram-bar.current {
+            background: linear-gradient(180deg, #f59e0b 0%, #fbbf24 100%);
+            opacity: 1;
+            animation: pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scaleY(1); opacity: 1; }
+            50% { transform: scaleY(1.05); opacity: 0.9; }
+        }
+
+        .histogram-bar:hover {
+            opacity: 1;
+        }
+
+        .manual-controls {
+            margin-top: 12px;
+        }
+
+        .control-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .power-display {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .power-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .power-unit {
+            font-size: 1em;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .step-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9em;
+        }
+
+        .step-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .step-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            .btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8em;
+            }
+        }
+
+        /* Bouton plein écran - aligné avec les autres éléments */
+        .fullscreen-btn {
+            position: fixed;
+            top: 8px;
+            right: 8px;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(139, 92, 246, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Styles uniformisés pour TOUS les éléments de la barre supérieure */
+        .top-bar-item {
+            position: fixed;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 600;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        /* Items de statut - pas de position fixed car ils sont dans un flex container */
+        .top-status-item {
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 600;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        /* Date en haut à gauche */
+        .date-display {
+            top: 8px;
+            left: 8px;
+            flex-direction: column;
+            min-width: 140px;
+        }
+
+        .datetime-day {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .datetime-date {
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        /* Heure décalée sur la gauche (après la date) */
+        .time-display {
+            top: 8px;
+            left: 160px;
+            font-size: 0.9em;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        /* Barre d'infos en haut - Status - décalée pour ne pas chevaucher le bouton fullscreen */
+        .top-status-bar {
+            position: fixed;
+            top: 8px;
+            right: 66px;
+            display: flex;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .top-status-item {
+            gap: 6px;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .top-status-label {
+            opacity: 0.85;
+            font-size: 0.9em;
+        }
+
+        .top-status-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 0.9em;
+        }
+
+        /* Couleurs pour l'état de connexion */
+        .status-connected {
+            color: #10b981 !important;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .status-disconnected {
+            color: #ef4444 !important;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Boutons programmes personnalisés - en bas au centre */
+        .programs-btn {
+            position: fixed;
+            bottom: 10px;
+            background: rgba(139, 92, 246, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1em;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 50px;
+        }
+
+        /* Bouton PROGRAMMES - à gauche du centre */
+        .programs-btn:first-of-type {
+            left: 50%;
+            transform: translateX(calc(-100% - 8px));
+        }
+
+        /* Bouton EDITER - à droite du centre */
+        .programs-btn:last-of-type {
+            left: 50%;
+            transform: translateX(8px);
+        }
+
+        .programs-btn:hover {
+            background: rgba(139, 92, 246, 1);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        .programs-btn:first-of-type:hover {
+            transform: translateX(calc(-100% - 8px)) scale(1.05);
+        }
+
+        .programs-btn:last-of-type:hover {
+            transform: translateX(8px) scale(1.05);
+        }
+
+        .programs-btn:active {
+            transform: scale(0.98);
+        }
+
+        .programs-btn:first-of-type:active {
+            transform: translateX(calc(-100% - 8px)) scale(0.98);
+        }
+
+        .programs-btn:last-of-type:active {
+            transform: translateX(8px) scale(0.98);
+        }
+
+        /* Boutons système (shutdown/reboot) */
+        .system-btn {
+            position: fixed;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1em;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 50px;
+        }
+
+        .shutdown-btn {
+            left: 10px;
+            bottom: 10px;
+            background: rgba(239, 68, 68, 0.9);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .shutdown-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+
+        .reboot-btn {
+            right: 10px;
+            bottom: 10px;
+            background: rgba(251, 146, 60, 0.9);
+            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.4);
+        }
+
+        .reboot-btn:hover {
+            background: rgba(251, 146, 60, 1);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(251, 146, 60, 0.6);
+        }
+
+        .system-btn:active {
+            transform: scale(0.98);
+        }
+
+        .datetime-day {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .datetime-date {
+            font-weight: 600;
+        }
+
+        .datetime-time {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Graphique RPM */
+        .rpm-chart-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .rpm-chart-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .rpm-chart-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        @media (min-width: 800px) and (orientation: landscape) {
+            .rpm-chart-container {
+                height: 250px;
+            }
+        }
+
+        #rpmChart {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="date-display top-bar-item">
+        <div class="datetime-day" id="datetimeDay">Lundi</div>
+        <div class="datetime-date" id="datetimeDate">26 janvier 2025</div>
+    </div>
+    <div class="time-display top-bar-item" id="datetimeTime">14:30:00</div>
+
+    <!-- Barre d'infos de statut en haut à droite -->
+    <div class="top-status-bar">
+        <div class="top-status-item">
+            <span class="top-status-value status-disconnected" id="connection-status-top">Déconnecté</span>
+        </div>
+        <div class="top-status-item">
+            <span class="top-status-label">RPM:</span>
+            <span class="top-status-value" id="rpm-top">--</span>
+        </div>
+        <div class="top-status-item">
+            <span class="top-status-label">Puissance:</span>
+            <span class="top-status-value" id="power-top">-- W</span>
+        </div>
+    </div>
+
+    <a href="/programs.html" class="programs-btn" title="Programmes d'entraînement personnalisés">
+        <span>📋</span>
+        <span>Programmes</span>
+    </a>
+    <button class="programs-btn" onclick="openProgramsEditor()" title="Éditer les programmes prédéfinis">
+        <span>⚙️</span>
+        <span>Éditer</span>
+    </button>
+    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
+
+    <!-- Boutons système -->
+    <button class="system-btn shutdown-btn" onclick="confirmShutdown()" title="Arrêter le Raspberry Pi">
+        <span>🔴</span>
+        <span>Éteindre</span>
+    </button>
+    <button class="system-btn reboot-btn" onclick="confirmReboot()" title="Redémarrer le Raspberry Pi">
+        <span>🔄</span>
+        <span>Redémarrer</span>
+    </button>
+    <div class="container">
+        <div class="main-grid">
+            <div class="left-column">
+                <div class="rpm-chart-panel">
+                    <div class="rpm-chart-title">📊 Évolution du RPM</div>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">RPM Cible:</span>
+                        <button onclick="decreaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.3em; min-width: 50px;">−</button>
+                        <span id="targetRpmDisplay" style="color: #a78bfa; font-weight: 700; font-size: 1.3em; min-width: 60px; text-align: center;">60</span>
+                        <button onclick="increaseTargetRpm()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1.3em; min-width: 50px;">+</button>
+                    </div>
+                    <div class="rpm-chart-container">
+                        <canvas id="rpmChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="timer-panel">
+                    <div class="timer-display" id="timer">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" id="startStopBtn" onclick="toggleTimer()">▶ Démarrer</button>
+                        <button class="timer-btn" onclick="resetTimer()">↻ Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="program-panel">
+                    <div class="program-title">📋 Programme d'Entraînement (30 min)</div>
+                    <div class="program-selector">
+                        <button class="program-btn active" onclick="selectProgram('none')">Manuel</button>
+                        <button class="program-btn" onclick="selectProgram('plat')">Plat</button>
+                        <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
+                        <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
+                        <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
+                        <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
+                        <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
+                        <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                        <button class="program-btn" onclick="selectProgram('changement')">Changement</button>
+                        <button class="program-btn" onclick="selectProgram('altitude')">Altitude</button>
+                    </div>
+
+                    <!-- Contrôles pour mode Manuel -->
+                    <div class="manual-controls" id="manualControls">
+                        <div class="control-title">Contrôle de Puissance</div>
+                        <div class="power-display">
+                            <div class="power-value" id="powerControl">--</div>
+                            <div class="power-unit">Watts</div>
+                        </div>
+                        <div class="button-container">
+                            <button class="btn" id="decreaseBtn" onclick="decreasePower()">−</button>
+                            <button class="btn" id="increaseBtn" onclick="increasePower()">+</button>
+                        </div>
+                        <div class="step-controls">
+                            <button class="step-btn" onclick="decreasePowerBy25()">-25W</button>
+                            <button class="step-btn" onclick="decreasePowerBy10()">-10W</button>
+                            <button class="step-btn active" onclick="setStep(5)">+5W</button>
+                            <button class="step-btn" onclick="setStep(10)">+10W</button>
+                            <button class="step-btn" onclick="setStep(25)">+25W</button>
+                        </div>
+                    </div>
+
+                    <!-- Infos pour programmes automatiques -->
+                    <div class="program-info" id="programInfo" style="display: none;">
+                        <div class="difficulty-control">
+                            <button class="difficulty-btn" onclick="decreaseDifficulty()">−</button>
+                            <div class="difficulty-display">
+                                <div class="difficulty-label">Difficulté</div>
+                                <div class="difficulty-value" id="difficultyLevel">Normal</div>
+                            </div>
+                            <button class="difficulty-btn" onclick="increaseDifficulty()">+</button>
+                        </div>
+                        <div class="current-power-display">
+                            <div class="current-power-label">Puissance Active</div>
+                            <div>
+                                <span class="current-power-value" id="currentActivePower">--</span>
+                                <span class="current-power-unit">W</span>
+                            </div>
+                        </div>
+                        <div class="histogram-container">
+                            <div class="histogram-scale" id="histogramScale">
+                                <div>200</div>
+                                <div>150</div>
+                                <div>100</div>
+                                <div>50</div>
+                                <div>0</div>
+                            </div>
+                            <div class="program-histogram" id="histogram"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'édition des programmes -->
+    <div id="programsEditorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; overflow-y: auto;">
+        <div style="max-width: 1000px; margin: 40px auto; background: rgba(15, 15, 30, 0.98); border-radius: 20px; padding: 30px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="color: white; font-size: 1.8em; margin: 0;">⚙️ Édition des Programmes Prédéfinis</h2>
+                <button onclick="closeProgramsEditor()" style="background: transparent; border: none; color: rgba(255,255,255,0.6); font-size: 2em; cursor: pointer; width: 40px; height: 40px;">&times;</button>
+            </div>
+
+            <div style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <p style="color: rgba(255,215,0,0.9); margin: 0; font-size: 0.9em;">
+                    💡 <strong>Info:</strong> Modifiez les 30 valeurs de puissance (une par minute) pour chaque programme. Les modifications sont sauvegardées dans votre navigateur.
+                </p>
+            </div>
+
+            <div style="margin-bottom: 20px; text-align: right;">
+                <button onclick="resetAllPrograms()" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    🔄 Réinitialiser tous les programmes
+                </button>
+            </div>
+
+            <div id="programsEditorList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentPower = 25;
+        let powerStep = 5;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let rpmAutoStarted = false;
+
+        // Variables pour le graphique RPM
+        let rpmHistory = [];
+        const MAX_RPM_HISTORY = 60; // 60 secondes d'historique
+        let rpmChart = null;
+        let rpmChartCtx = null;
+        let targetRpm = 60; // RPM de référence par défaut
+
+        // Variables pour les statistiques du programme
+        let programStats = {
+            active: false,
+            startTime: null,
+            rpmSamples: [],
+            rpmAboveTarget: 0,
+            rpmBelowTarget: 0,
+            totalSamples: 0
+        };
+
+        // Charger le RPM cible depuis localStorage
+        function loadTargetRpm() {
+            const saved = localStorage.getItem('targetRpm');
+            if (saved) {
+                targetRpm = parseInt(saved);
+                document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            }
+        }
+
+        // Sauvegarder le RPM cible dans localStorage
+        function saveTargetRpm() {
+            localStorage.setItem('targetRpm', targetRpm);
+        }
+
+        // Augmenter le RPM cible
+        function increaseTargetRpm() {
+            targetRpm += 5;
+            if (targetRpm > 200) targetRpm = 200; // Maximum 200 RPM
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        // Diminuer le RPM cible
+        function decreaseTargetRpm() {
+            targetRpm -= 5;
+            if (targetRpm < 20) targetRpm = 20; // Minimum 20 RPM
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        // Démarrer la collecte de statistiques
+        function startProgramStats() {
+            programStats = {
+                active: true,
+                startTime: Date.now(),
+                rpmSamples: [],
+                rpmAboveTarget: 0,
+                rpmBelowTarget: 0,
+                totalSamples: 0
+            };
+        }
+
+        // Arrêter la collecte et afficher la synthèse
+        function stopProgramStats() {
+            if (!programStats.active) return;
+            programStats.active = false;
+            showProgramSummary();
+        }
+
+        // Enregistrer un échantillon RPM
+        function recordRpmSample(rpm) {
+            if (!programStats.active || !programActive) return;
+
+            programStats.rpmSamples.push(rpm);
+            programStats.totalSamples++;
+
+            if (rpm >= targetRpm) {
+                programStats.rpmAboveTarget++;
+            } else {
+                programStats.rpmBelowTarget++;
+            }
+        }
+
+        // Afficher la synthèse du programme
+        function showProgramSummary() {
+            if (programStats.totalSamples === 0) return;
+
+            // Calculer les statistiques
+            const avgRpm = programStats.rpmSamples.reduce((a, b) => a + b, 0) / programStats.totalSamples;
+            const percentAbove = (programStats.rpmAboveTarget / programStats.totalSamples) * 100;
+            const percentBelow = (programStats.rpmBelowTarget / programStats.totalSamples) * 100;
+            const duration = Math.floor((Date.now() - programStats.startTime) / 1000);
+            const durationMin = Math.floor(duration / 60);
+            const durationSec = duration % 60;
+
+            // Créer la modal
+            const modal = document.createElement('div');
+            modal.id = 'summaryModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 24px;
+                    padding: 40px;
+                    max-width: 600px;
+                    width: 90%;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                ">
+                    <h2 style="
+                        color: #a78bfa;
+                        text-align: center;
+                        margin-bottom: 30px;
+                        font-size: 2em;
+                        font-weight: 800;
+                    ">🎉 Programme Terminé !</h2>
+
+                    <div style="
+                        background: rgba(255, 255, 255, 0.03);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 16px;
+                        padding: 25px;
+                        margin-bottom: 25px;
+                    ">
+                        <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 1.3em;">📊 Statistiques</h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div style="text-align: center; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85em; margin-bottom: 5px;">RPM Moyen</div>
+                                <div style="color: #a78bfa; font-size: 2em; font-weight: 700;">${Math.round(avgRpm)}</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 12px;">
+                                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85em; margin-bottom: 5px;">Durée</div>
+                                <div style="color: #a78bfa; font-size: 2em; font-weight: 700;">${durationMin}m ${durationSec}s</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="color: rgba(255, 255, 255, 0.7);">Seuil: ${targetRpm} RPM</span>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span style="color: #22c55e; font-weight: 600;">✓ Au-dessus</span>
+                                    <span style="color: #22c55e; font-weight: 700;">${percentAbove.toFixed(1)}%</span>
+                                </div>
+                                <div style="height: 30px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; display: flex;">
+                                    <div style="
+                                        width: ${percentAbove}%;
+                                        background: linear-gradient(90deg, #22c55e, #10b981);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: 600;
+                                        font-size: 0.85em;
+                                    ">${percentAbove > 10 ? Math.round(percentAbove) + '%' : ''}</div>
+                                    <div style="
+                                        width: ${percentBelow}%;
+                                        background: linear-gradient(90deg, #ef4444, #dc2626);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-weight: 600;
+                                        font-size: 0.85em;
+                                    ">${percentBelow > 10 ? Math.round(percentBelow) + '%' : ''}</div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                    <span style="color: #ef4444; font-weight: 600;">✗ En dessous</span>
+                                    <span style="color: #ef4444; font-weight: 700;">${percentBelow.toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <canvas id="summaryChart" style="width: 100%; height: 150px; margin-top: 20px;"></canvas>
+                    </div>
+
+                    <button onclick="closeSummary()" style="
+                        width: 100%;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+                        border: none;
+                        border-radius: 12px;
+                        color: white;
+                        font-size: 1.1em;
+                        font-weight: 700;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+                    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        Fermer
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Dessiner le graphique de distribution RPM
+            setTimeout(() => drawSummaryChart(programStats.rpmSamples), 100);
+        }
+
+        // Dessiner le graphique de distribution dans la synthèse
+        function drawSummaryChart(rpmSamples) {
+            const canvas = document.getElementById('summaryChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            // Créer un histogramme de distribution
+            const bins = 10;
+            const maxRpm = Math.max(...rpmSamples);
+            const minRpm = Math.min(...rpmSamples);
+            const binSize = (maxRpm - minRpm) / bins;
+            const distribution = new Array(bins).fill(0);
+
+            rpmSamples.forEach(rpm => {
+                const binIndex = Math.min(Math.floor((rpm - minRpm) / binSize), bins - 1);
+                distribution[binIndex]++;
+            });
+
+            const maxCount = Math.max(...distribution);
+            const barWidth = width / bins;
+            const padding = 10;
+
+            // Dessiner les barres
+            distribution.forEach((count, i) => {
+                const barHeight = (count / maxCount) * (height - padding * 2);
+                const x = i * barWidth;
+                const y = height - padding - barHeight;
+                const binRpm = minRpm + (i + 0.5) * binSize;
+                const color = binRpm >= targetRpm ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+
+                // Bordure
+                ctx.strokeStyle = binRpm >= targetRpm ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x + 2, y, barWidth - 4, barHeight);
+            });
+
+            // Ligne de seuil
+            const targetX = ((targetRpm - minRpm) / (maxRpm - minRpm)) * width;
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(targetX, 0);
+            ctx.lineTo(targetX, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Fermer la modal de synthèse
+        function closeSummary() {
+            const modal = document.getElementById('summaryModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Variables des programmes d'entraînement
+        let currentProgram = 'none';
+        let programActive = false;
+        let difficultyAdjustment = 0;
+
+        // Définition des programmes par défaut (30 minutes, puissance par minute)
+        const defaultPrograms = {
+            'plat': [
+                25, 25, 25, 35, 35, 35, 35, 35, 35, 35,
+                50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+                35, 35, 35, 35, 35, 35, 25, 25, 25, 25
+            ],
+            'vallee': [
+                25, 25, 25, 70, 90, 110, 120, 130, 120, 110,
+                80, 70, 90, 110, 130, 140, 130, 110, 90, 100,
+                120, 110, 100, 90, 80, 70, 60, 25, 25, 25
+            ],
+            'collines': [
+                25, 25, 25, 50, 70, 90, 110, 130, 120, 100,
+                80, 60, 40, 30, 50, 70, 90, 110, 130, 120,
+                100, 80, 60, 55, 50, 45, 40, 25, 25, 25
+            ],
+            'montagne': [
+                25, 25, 25, 80, 120, 140, 160, 150, 130, 110,
+                90, 80, 100, 120, 140, 160, 180, 160, 140, 120,
+                100, 90, 80, 70, 60, 60, 60, 25, 25, 25
+            ],
+            'alpin': [
+                25, 25, 25, 50, 60, 70, 80, 90, 100, 110,
+                120, 130, 140, 150, 160, 160, 150, 130, 110, 90,
+                70, 60, 50, 45, 40, 35, 30, 25, 25, 25
+            ],
+            'intervalle': [
+                25, 25, 25, 80, 50, 80, 50, 90, 50, 110,
+                50, 110, 60, 125, 60, 125, 50, 110, 50, 90,
+                50, 100, 50, 90, 50, 70, 50, 25, 25, 25
+            ],
+            'pyramide': [
+                25, 25, 25, 40, 50, 60, 70, 80, 90, 100,
+                110, 115, 120, 120, 120, 115, 110, 100, 90, 80,
+                70, 60, 50, 40, 30, 25, 25, 25, 25, 25
+            ],
+            'changement': [
+                25, 25, 25, 60, 50, 70, 100, 80, 60, 90,
+                70, 60, 80, 100, 90, 70, 80, 100, 110, 90,
+                70, 80, 90, 70, 60, 70, 80, 25, 25, 25
+            ],
+            'altitude': [
+                25, 25, 25, 90, 80, 100, 120, 90, 70, 100,
+                130, 110, 90, 120, 140, 120, 100, 140, 120, 100,
+                80, 90, 110, 100, 80, 60, 50, 25, 25, 25
+            ]
+        };
+
+        // Noms des programmes pour l'affichage
+        const programNames = {
+            'plat': 'Plat',
+            'vallee': 'Vallée',
+            'collines': 'Collines',
+            'montagne': 'Montagne',
+            'alpin': 'Col Alpin',
+            'intervalle': 'Intervalle',
+            'pyramide': 'Pyramide',
+            'changement': 'Changement',
+            'altitude': 'Altitude'
+        };
+
+        // Charger les programmes depuis localStorage ou utiliser les valeurs par défaut
+        let programs = {};
+        function loadPrograms() {
+            const saved = localStorage.getItem('customPrograms');
+            if (saved) {
+                try {
+                    programs = JSON.parse(saved);
+                    console.log('✅ Programmes personnalisés chargés depuis localStorage');
+                } catch (e) {
+                    console.error('❌ Erreur lors du chargement des programmes:', e);
+                    programs = JSON.parse(JSON.stringify(defaultPrograms));
+                }
+            } else {
+                programs = JSON.parse(JSON.stringify(defaultPrograms));
+            }
+        }
+
+        // Sauvegarder les programmes dans localStorage
+        function savePrograms() {
+            localStorage.setItem('customPrograms', JSON.stringify(programs));
+            console.log('💾 Programmes sauvegardés');
+        }
+
+        // Réinitialiser tous les programmes aux valeurs par défaut
+        function resetAllPrograms() {
+            if (confirm('⚠️ Voulez-vous vraiment réinitialiser TOUS les programmes à leurs valeurs par défaut ?\n\nCette action est irréversible.')) {
+                programs = JSON.parse(JSON.stringify(defaultPrograms));
+                savePrograms();
+                alert('✅ Tous les programmes ont été réinitialisés !');
+                closeProgramsEditor();
+                // Recharger l'affichage si un programme est actif
+                if (currentProgram !== 'none') {
+                    selectProgram(currentProgram);
+                }
+            }
+        }
+
+        // Charger les programmes au démarrage
+        loadPrograms();
+
+        // Formater le temps en HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Mettre à jour l'affichage du chronomètre
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = formatTime(timerSeconds);
+        }
+
+        // Démarrer/Arrêter le chronomètre
+        function toggleTimer() {
+            const btn = document.getElementById('startStopBtn');
+            if (!btn) {
+                console.error('❌ Bouton startStopBtn introuvable');
+                return;
+            }
+
+            if (isTimerRunning) {
+                // Arrêter le chronomètre
+                console.log('⏸️ Pause du chronomètre');
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isTimerRunning = false;
+                btn.textContent = '▶ Démarrer';
+                btn.classList.remove('running');
+            } else {
+                // Démarrer le chronomètre
+                console.log('▶️ Démarrage du chronomètre');
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                    updateProgramProgress();
+
+                    // Vérifier si le programme est terminé (30 minutes = 1800 secondes)
+                    if (programActive && timerSeconds >= 1800) {
+                        console.log('🏁 Programme terminé (30 min)');
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isTimerRunning = false;
+                        btn.textContent = '▶ Démarrer';
+                        btn.classList.remove('running');
+                        stopProgramStats(); // Afficher la synthèse
+                    }
+                }, 1000);
+                isTimerRunning = true;
+                btn.textContent = '⏸ Arrêter';
+                btn.classList.add('running');
+            }
+        }
+
+        // Réinitialiser le chronomètre
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            isTimerRunning = false;
+            rpmAutoStarted = false;
+            updateTimerDisplay();
+            const btn = document.getElementById('startStopBtn');
+            btn.textContent = '▶ Démarrer';
+            btn.classList.remove('running');
+
+            // Réinitialiser le programme et la difficulté si un programme est actif
+            if (programActive) {
+                difficultyAdjustment = 0;
+                updateDifficultyDisplay();
+                renderHistogram();
+            }
+
+            // Réinitialiser la progression du programme
+            updateProgramProgress();
+        }
+
+        // Mettre à jour l'affichage de la puissance active
+        function updateActivePowerDisplay() {
+            if (!programActive || !programs[currentProgram]) {
+                document.getElementById('currentActivePower').textContent = '--';
+                return;
+            }
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+            if (currentMinute < 30) {
+                const basePower = programs[currentProgram][currentMinute];
+                const adjustedPower = Math.max(0, basePower + difficultyAdjustment);
+                document.getElementById('currentActivePower').textContent = adjustedPower;
+            } else {
+                document.getElementById('currentActivePower').textContent = '0';
+            }
+        }
+
+        // Augmenter la difficulté
+        function increaseDifficulty() {
+            if (!programActive) return;
+
+            difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+            updateDifficultyDisplay();
+            renderHistogram();
+            updateActivePowerDisplay();
+
+            // Appliquer immédiatement le changement de difficulté si le timer est en cours
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // Diminuer la difficulté
+        function decreaseDifficulty() {
+            if (!programActive) return;
+
+            difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+            updateDifficultyDisplay();
+            renderHistogram();
+            updateActivePowerDisplay();
+
+            // Appliquer immédiatement le changement de difficulté si le timer est en cours
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // Mettre à jour l'affichage de la difficulté
+        function updateDifficultyDisplay() {
+            const display = document.getElementById('difficultyLevel');
+
+            if (difficultyAdjustment > 0) {
+                display.textContent = `+${difficultyAdjustment}W`;
+                display.style.color = '#f44336';
+            } else if (difficultyAdjustment < 0) {
+                display.textContent = `${difficultyAdjustment}W`;
+                display.style.color = '#28a745';
+            } else {
+                display.textContent = 'Normal';
+                display.style.color = '#a78bfa';
+            }
+        }
+
+        // Sélectionner un programme
+        function selectProgram(program) {
+            currentProgram = program;
+            programActive = (program !== 'none');
+
+            // Mettre à jour les boutons
+            document.querySelectorAll('.program-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Afficher/masquer les contrôles appropriés
+            const programInfo = document.getElementById('programInfo');
+            const manualControls = document.getElementById('manualControls');
+
+            if (programActive) {
+                // Mode programme automatique
+                programInfo.style.display = 'block';
+                manualControls.style.display = 'none';
+                difficultyAdjustment = 0;
+                updateDifficultyDisplay();
+                renderHistogram();
+                resetTimer();
+                startProgramStats(); // Démarrer la collecte de statistiques
+
+                // Définir la puissance initiale du programme (minute 0)
+                if (programs[currentProgram]) {
+                    const initialPower = Math.max(25, programs[currentProgram][0] + difficultyAdjustment);
+                    setPower(initialPower);
+                    updateActivePowerDisplay();
+                }
+            } else {
+                // Mode manuel
+                programInfo.style.display = 'none';
+                manualControls.style.display = 'block';
+                // Définir la puissance par défaut en mode manuel à 25W
+                setPower(25);
+            }
+        }
+
+        // Générer l'histogramme du programme
+        function renderHistogram() {
+            if (!programActive || !programs[currentProgram]) return;
+
+            const histogram = document.getElementById('histogram');
+            histogram.innerHTML = '';
+
+            const powerValues = programs[currentProgram];
+
+            // Calculer le max avec l'ajustement de difficulté
+            const maxAdjusted = Math.max(...powerValues.map(p => Math.max(0, p + difficultyAdjustment)));
+
+            // Créer une barre pour chaque minute
+            powerValues.forEach((power, index) => {
+                const adjustedPower = Math.max(0, power + difficultyAdjustment);
+
+                const bar = document.createElement('div');
+                bar.className = 'histogram-bar';
+                bar.style.height = `${(adjustedPower / maxAdjusted) * 100}%`;
+
+                // Colorer la barre en fonction de la progression
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                }
+
+                bar.title = `Minute ${index + 1}: ${adjustedPower}W`;
+
+                histogram.appendChild(bar);
+            });
+
+            // Mettre à jour l'échelle
+            const scale = document.getElementById('histogramScale');
+            const step = Math.ceil(maxAdjusted / 4 / 10) * 10;
+            scale.innerHTML = '';
+            for (let i = 4; i >= 0; i--) {
+                const div = document.createElement('div');
+                div.textContent = step * i;
+                scale.appendChild(div);
+            }
+        }
+
+        // Mettre à jour la progression du programme
+        function updateProgramProgress() {
+            if (!programActive || currentProgram === 'none') return;
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+
+            // Mettre à jour l'affichage de la puissance active
+            updateActivePowerDisplay();
+
+            // Mettre à jour les couleurs de l'histogramme
+            const bars = document.querySelectorAll('.histogram-bar');
+            bars.forEach((bar, index) => {
+                bar.classList.remove('completed', 'current');
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                }
+            });
+
+            // Obtenir la puissance cible pour la minute actuelle
+            if (programs[currentProgram] && currentMinute < 30) {
+                const basePower = programs[currentProgram][currentMinute];
+                const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+
+                // Ajuster automatiquement la puissance si le programme est actif et le chrono tourne
+                if (isTimerRunning && currentMinute >= 0) {
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // Définir la puissance
+        async function setPower(watts) {
+            try {
+                console.log('🔧 Définir puissance:', watts, 'W', 'currentPower avant:', currentPower);
+                const response = await fetch(`/power/${watts}`, { method: 'POST' });
+                console.log('📡 Réponse fetch:', response.status, response.statusText);
+
+                if (response.ok) {
+                    const responseText = await response.text();
+                    console.log('📝 Réponse serveur:', responseText);
+                    currentPower = watts;
+                    updateDisplay();
+                    console.log('✅ Puissance définie:', watts, 'W', 'currentPower après:', currentPower);
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Erreur réponse serveur:', response.status, errorText);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du réglage de la puissance:', error);
+            }
+        }
+
+        // Augmenter la puissance
+        async function increasePower() {
+            console.log('🔼 BOUTON + CLIQUÉ - currentPower:', currentPower, 'powerStep:', powerStep);
+            const newPower = Math.min(currentPower + powerStep, 400);
+            console.log('⬆️ Augmenter puissance:', currentPower, '→', newPower);
+            await setPower(newPower);
+        }
+
+        // Diminuer la puissance
+        async function decreasePower() {
+            console.log('🔽 BOUTON - CLIQUÉ - currentPower:', currentPower, 'powerStep:', powerStep);
+            const newPower = Math.max(currentPower - powerStep, 25);
+            console.log('⬇️ Diminuer puissance:', currentPower, '→', newPower);
+            await setPower(newPower);
+        }
+
+        // Changer le pas d'ajustement
+        function setStep(step) {
+            powerStep = step;
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Diminuer la puissance de 10W directement
+        async function decreasePowerBy10() {
+            console.log('🔽 BOUTON -10W - CLIQUÉ - currentPower:', currentPower);
+            const newPower = Math.max(currentPower - 10, 25);
+            console.log('⬇️ Diminuer puissance de 10W:', currentPower, '→', newPower);
+            await setPower(newPower);
+        }
+
+        // Diminuer la puissance de 25W directement
+        async function decreasePowerBy25() {
+            console.log('🔽 BOUTON -25W - CLIQUÉ - currentPower:', currentPower);
+            const newPower = Math.max(currentPower - 25, 25);
+            console.log('⬇️ Diminuer puissance de 25W:', currentPower, '→', newPower);
+            await setPower(newPower);
+        }
+
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            console.log('🔄 updateDisplay appelé - currentPower:', currentPower);
+
+            const powerTop = document.getElementById('power-top');
+            if (powerTop) {
+                powerTop.textContent = currentPower + ' W';
+                console.log('✓ power-top mis à jour:', powerTop.textContent);
+            } else {
+                console.warn('⚠️ power-top introuvable');
+            }
+
+            const powerControl = document.getElementById('powerControl');
+            if (powerControl) {
+                powerControl.textContent = currentPower;
+                console.log('✓ powerControl mis à jour:', powerControl.textContent);
+            } else {
+                console.warn('⚠️ powerControl introuvable');
+            }
+        }
+
+        // Initialiser le graphique RPM
+        function initRpmChart() {
+            try {
+                rpmChart = document.getElementById('rpmChart');
+                if (!rpmChart) {
+                    console.error('❌ Canvas RPM introuvable');
+                    return;
+                }
+
+                const container = rpmChart.parentElement;
+                if (!container) {
+                    console.error('❌ Container du canvas RPM introuvable');
+                    return;
+                }
+
+                // Vérifier que le container a des dimensions
+                if (container.clientWidth === 0 || container.clientHeight === 0) {
+                    console.warn('⚠️ Container sans dimensions, nouvelle tentative dans 200ms');
+                    setTimeout(initRpmChart, 200);
+                    return;
+                }
+
+                rpmChartCtx = rpmChart.getContext('2d');
+                if (!rpmChartCtx) {
+                    console.error('❌ Impossible d\'obtenir le contexte 2D du canvas');
+                    return;
+                }
+
+                // Définir la taille du canvas
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+
+                // Initialiser l'historique avec des zéros
+                rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+
+                drawRpmChart();
+                console.log('✅ Graphique RPM initialisé:', rpmChart.width, 'x', rpmChart.height);
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation du graphique RPM:', error);
+            }
+        }
+
+        // Dessiner le graphique RPM
+        function drawRpmChart() {
+            if (!rpmChartCtx || !rpmChart) return;
+
+            const width = rpmChart.width;
+            const height = rpmChart.height;
+            const padding = 40;
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+
+            // Effacer le canvas
+            rpmChartCtx.clearRect(0, 0, width, height);
+
+            // Trouver le maximum pour l'échelle (inclure targetRpm)
+            const maxRpm = Math.max(...rpmHistory, targetRpm, 100); // Minimum 100 pour l'échelle
+            const roundedMax = Math.ceil(maxRpm / 20) * 20; // Arrondir au 20 supérieur
+
+            // Dessiner le fond de la grille
+            rpmChartCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            rpmChartCtx.lineWidth = 1;
+
+            // Lignes horizontales de la grille
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight * i) / 4;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.moveTo(padding, y);
+                rpmChartCtx.lineTo(width - padding, y);
+                rpmChartCtx.stroke();
+
+                // Étiquettes de l'axe Y
+                const value = roundedMax - (roundedMax * i) / 4;
+                rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                rpmChartCtx.font = '11px Inter';
+                rpmChartCtx.textAlign = 'right';
+                rpmChartCtx.fillText(Math.round(value), padding - 10, y + 4);
+            }
+
+            // Dessiner la ligne de seuil RPM cible
+            const targetY = height - padding - (targetRpm / roundedMax) * chartHeight;
+            rpmChartCtx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            rpmChartCtx.lineWidth = 2;
+            rpmChartCtx.setLineDash([5, 5]);
+            rpmChartCtx.beginPath();
+            rpmChartCtx.moveTo(padding, targetY);
+            rpmChartCtx.lineTo(width - padding, targetY);
+            rpmChartCtx.stroke();
+            rpmChartCtx.setLineDash([]);
+
+            // Label pour le seuil
+            rpmChartCtx.fillStyle = 'rgba(255, 215, 0, 0.9)';
+            rpmChartCtx.font = 'bold 11px Inter';
+            rpmChartCtx.textAlign = 'left';
+            rpmChartCtx.fillText(`Cible: ${targetRpm}`, padding + 5, targetY - 5);
+
+            // Dessiner la courbe RPM avec coloration conditionnelle
+            if (rpmHistory.length > 0) {
+                const pointSpacing = chartWidth / (MAX_RPM_HISTORY - 1);
+
+                // Dessiner l'aire sous la courbe avec gradient conditionnel
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
+
+                    // Déterminer la couleur en fonction du RPM moyen du segment
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    const color = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 0.15)'  // Vert si au-dessus
+                        : 'rgba(239, 68, 68, 0.15)';  // Rouge si en dessous
+
+                    rpmChartCtx.fillStyle = color;
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.lineTo(x2, height - padding);
+                    rpmChartCtx.lineTo(x1, height - padding);
+                    rpmChartCtx.closePath();
+                    rpmChartCtx.fill();
+                }
+
+                // Dessiner la ligne avec segments colorés
+                rpmChartCtx.lineWidth = 2.5;
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
+
+                    // Déterminer la couleur en fonction du RPM moyen du segment
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    rpmChartCtx.strokeStyle = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 1)'  // Vert si au-dessus
+                        : 'rgba(239, 68, 68, 1)';  // Rouge si en dessous
+
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.stroke();
+                }
+
+                // Dessiner un point au dernier point de données
+                const lastX = padding + (rpmHistory.length - 1) * pointSpacing;
+                const lastY = height - padding - (rpmHistory[rpmHistory.length - 1] / roundedMax) * chartHeight;
+                const lastRpm = rpmHistory[rpmHistory.length - 1];
+                const lastColor = lastRpm >= targetRpm ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
+
+                rpmChartCtx.fillStyle = lastColor;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+                rpmChartCtx.fill();
+
+                // Cercle extérieur animé
+                rpmChartCtx.strokeStyle = lastColor;
+                rpmChartCtx.lineWidth = 2;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.arc(lastX, lastY, 6, 0, Math.PI * 2);
+                rpmChartCtx.stroke();
+            }
+
+            // Étiquettes des axes
+            rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            rpmChartCtx.font = '10px Inter';
+            rpmChartCtx.textAlign = 'center';
+            rpmChartCtx.fillText('60s', padding + 5, height - 5);
+            rpmChartCtx.fillText('0s', width - padding - 5, height - 5);
+        }
+
+        // Ajouter une valeur RPM à l'historique
+        function addRpmToHistory(rpm) {
+            rpmHistory.push(rpm);
+            if (rpmHistory.length > MAX_RPM_HISTORY) {
+                rpmHistory.shift();
+            }
+            drawRpmChart();
+        }
+
+        // Récupérer le statut du vélo
+        async function updateStatus() {
+            try {
+                const response = await fetch('/status');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Mise à jour de l'état de connexion dans la barre du haut
+                    const connectionStatusTop = document.getElementById('connection-status-top');
+                    if (connectionStatusTop) {
+                        // Supprimer les anciennes classes
+                        connectionStatusTop.classList.remove('status-connected', 'status-disconnected');
+
+                        if (data.connected) {
+                            connectionStatusTop.textContent = 'Connecté';
+                            connectionStatusTop.classList.add('status-connected');
+                        } else {
+                            connectionStatusTop.textContent = 'Déconnecté';
+                            connectionStatusTop.classList.add('status-disconnected');
+                        }
+                    }
+
+                    // Mise à jour du RPM dans la barre du haut
+                    const rpmTop = document.getElementById('rpm-top');
+                    if (rpmTop) {
+                        rpmTop.textContent = data.rpm + ' tr/min';
+                    }
+
+                    // Mise à jour de la puissance dans la barre du haut
+                    const powerTop = document.getElementById('power-top');
+                    if (powerTop) {
+                        powerTop.textContent = data.power + ' W';
+                    }
+
+                    // Ne pas écraser currentPower si on est en train de le modifier
+                    // Seulement le mettre à jour si la différence est significative (plus de 5W)
+                    if (Math.abs(data.power - currentPower) > 5) {
+                        console.log('📡 Mise à jour currentPower depuis le serveur:', currentPower, '→', data.power);
+                        currentPower = data.power;
+                        updateDisplay();
+                    }
+
+                    // Ajouter le RPM à l'historique du graphique
+                    addRpmToHistory(data.rpm);
+
+                    // Enregistrer le RPM pour les statistiques du programme
+                    recordRpmSample(data.rpm);
+
+                    // Auto-start/restart du chrono si RPM > 0
+                    if (data.rpm > 0 && !isTimerRunning) {
+                        console.log('🎬 Démarrage automatique du chrono (RPM:', data.rpm, ')');
+                        toggleTimer();
+                        rpmAutoStarted = true;
+                    }
+
+                    // Auto-pause si RPM = 0 après avoir démarré
+                    if (data.rpm === 0 && rpmAutoStarted && isTimerRunning) {
+                        console.log('⏸️ Pause automatique du chrono (RPM = 0)');
+                        toggleTimer();
+                    }
+                } else {
+                    console.error('❌ Erreur réponse /status:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors de la récupération du statut:', error);
+            }
+        }
+
+        // Actualiser toutes les 500ms
+        setInterval(updateStatus, 500);
+
+        // Mode plein écran
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // Entrer en mode plein écran
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur lors du passage en plein écran: ${err.message}`);
+                });
+            } else {
+                // Sortir du mode plein écran
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Mettre à jour l'icône du bouton en fonction de l'état plein écran
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.getElementById('fullscreenBtn');
+            if (document.fullscreenElement) {
+                btn.textContent = '⛶'; // Icône "Quitter le plein écran"
+                btn.title = 'Quitter le plein écran';
+            } else {
+                btn.textContent = '⛶'; // Icône "Plein écran"
+                btn.title = 'Mode plein écran';
+            }
+        });
+
+        // Fonctions de gestion système
+        function confirmShutdown() {
+            if (confirm('⚠️ Voulez-vous vraiment ÉTEINDRE le Raspberry Pi ?\n\nLe système sera complètement arrêté.')) {
+                fetch('/system/shutdown', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('🔴 ' + data.message);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'arrêt:', error);
+                    alert('❌ Erreur lors de l\'arrêt du système');
+                });
+            }
+        }
+
+        function confirmReboot() {
+            if (confirm('⚠️ Voulez-vous vraiment REDÉMARRER le Raspberry Pi ?\n\nLe système redémarrera automatiquement.')) {
+                fetch('/system/reboot', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('🔄 ' + data.message);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du redémarrage:', error);
+                    alert('❌ Erreur lors du redémarrage du système');
+                });
+            }
+        }
+
+        // Mettre à jour la date et l'heure
+        function updateDateTime() {
+            const now = new Date();
+
+            // Jours de la semaine en français
+            const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                         'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+            // Jour de la semaine
+            const jour = jours[now.getDay()];
+
+            // Date formatée
+            const date = `${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()}`;
+
+            // Heure formatée
+            const heures = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const secondes = String(now.getSeconds()).padStart(2, '0');
+            const heure = `${heures}:${minutes}:${secondes}`;
+
+            // Mise à jour de l'affichage
+            document.getElementById('datetimeDay').textContent = jour;
+            document.getElementById('datetimeDate').textContent = date;
+            document.getElementById('datetimeTime').textContent = heure;
+        }
+
+        // Mettre à jour la date/heure toutes les secondes
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Initialisation - Attendre que le DOM soit complètement chargé
+        function initializeApp() {
+            try {
+                console.log('🚀 Initialisation de l\'application...');
+
+                // Vérifier que les éléments critiques existent
+                const manualControls = document.getElementById('manualControls');
+                const increaseBtn = document.getElementById('increaseBtn');
+                const decreaseBtn = document.getElementById('decreaseBtn');
+                const powerControl = document.getElementById('powerControl');
+
+                console.log('🔍 Éléments trouvés:');
+                console.log('  - manualControls:', manualControls ? 'OK' : '❌ MANQUANT');
+                console.log('  - increaseBtn:', increaseBtn ? 'OK' : '❌ MANQUANT');
+                console.log('  - decreaseBtn:', decreaseBtn ? 'OK' : '❌ MANQUANT');
+                console.log('  - powerControl:', powerControl ? 'OK' : '❌ MANQUANT');
+
+                // Afficher les contrôles manuels par défaut
+                if (manualControls) {
+                    manualControls.style.display = 'block';
+                    console.log('✓ Contrôles manuels affichés');
+                }
+
+                updateTimerDisplay();
+                updateDisplay();
+                loadPrograms();
+                loadTargetRpm();
+
+                // Initialiser le graphique RPM avec un petit délai pour s'assurer que le layout est prêt
+                setTimeout(() => {
+                    initRpmChart();
+                }, 100);
+
+                // Démarrer la mise à jour du statut
+                updateStatus();
+
+                // Définir la puissance par défaut à 25W au démarrage (mode manuel)
+                setPower(25);
+
+                console.log('✅ Application initialisée avec succès');
+                console.log('📊 Variables globales:');
+                console.log('  - currentPower:', currentPower);
+                console.log('  - powerStep:', powerStep);
+                console.log('  - programActive:', programActive);
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation:', error);
+            }
+        }
+
+        // Lancer l'initialisation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Redimensionner le graphique si la fenêtre change de taille
+        window.addEventListener('resize', () => {
+            if (rpmChart && rpmChartCtx) {
+                const container = rpmChart.parentElement;
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                drawRpmChart();
+            }
+        });
+
+        // ===== Fonctions d'édition des programmes =====
+
+        // Ouvrir le modal d'édition des programmes
+        function openProgramsEditor() {
+            const modal = document.getElementById('programsEditorModal');
+            const listContainer = document.getElementById('programsEditorList');
+            listContainer.innerHTML = '';
+
+            // Créer une carte pour chaque programme
+            Object.keys(programs).forEach(programId => {
+                const card = document.createElement('div');
+                card.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 15px;';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;';
+                header.innerHTML = `
+                    <h3 style="color: white; margin: 0; font-size: 1.3em;">${programNames[programId]}</h3>
+                    <div>
+                        <button onclick="editProgramValues('${programId}')" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 10px;">✎ Éditer</button>
+                        <button onclick="resetSingleProgram('${programId}')" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">🔄 Réinitialiser</button>
+                    </div>
+                `;
+
+                // Mini histogramme de prévisualisation
+                const preview = document.createElement('div');
+                preview.style.cssText = 'display: flex; gap: 2px; height: 60px; align-items: flex-end;';
+                programs[programId].forEach(power => {
+                    const bar = document.createElement('div');
+                    const height = (power / 200) * 100; // Max 200W pour l'affichage
+                    bar.style.cssText = `flex: 1; background: linear-gradient(180deg, #8b5cf6, #a78bfa); border-radius: 2px 2px 0 0; height: ${height}%; opacity: 0.7;`;
+                    preview.appendChild(bar);
+                });
+
+                card.appendChild(header);
+                card.appendChild(preview);
+                listContainer.appendChild(card);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        // Fermer le modal d'édition
+        function closeProgramsEditor() {
+            document.getElementById('programsEditorModal').style.display = 'none';
+        }
+
+        // Éditer les valeurs d'un programme
+        function editProgramValues(programId) {
+            const newValues = prompt(
+                `✏️ Éditer le programme "${programNames[programId]}"\n\n` +
+                `Entrez 30 valeurs séparées par des virgules (une par minute)\n` +
+                `Plage : 25-400 Watts\n\n` +
+                `Valeurs actuelles :\n${programs[programId].join(', ')}`,
+                programs[programId].join(', ')
+            );
+
+            if (newValues !== null) {
+                try {
+                    const values = newValues.split(',').map(v => parseInt(v.trim()));
+
+                    // Validation
+                    if (values.length !== 30) {
+                        alert('❌ Erreur : Vous devez entrer exactement 30 valeurs !');
+                        return;
+                    }
+
+                    if (values.some(v => isNaN(v) || v < 25 || v > 400)) {
+                        alert('❌ Erreur : Toutes les valeurs doivent être des nombres entre 25 et 400 !');
+                        return;
+                    }
+
+                    // Sauvegarder
+                    programs[programId] = values;
+                    savePrograms();
+                    alert(`✅ Programme "${programNames[programId]}" mis à jour !`);
+
+                    // Rafraîchir l'affichage
+                    openProgramsEditor();
+
+                    // Recharger si c'est le programme actif
+                    if (currentProgram === programId) {
+                        selectProgram(programId);
+                    }
+                } catch (e) {
+                    alert('❌ Erreur de format. Utilisez des nombres séparés par des virgules.');
+                }
+            }
+        }
+
+        // Réinitialiser un seul programme
+        function resetSingleProgram(programId) {
+            if (confirm(`⚠️ Réinitialiser le programme "${programNames[programId]}" à ses valeurs par défaut ?`)) {
+                programs[programId] = [...defaultPrograms[programId]];
+                savePrograms();
+                alert(`✅ Programme "${programNames[programId]}" réinitialisé !`);
+                openProgramsEditor();
+
+                // Recharger si c'est le programme actif
+                if (currentProgram === programId) {
+                    selectProgram(programId);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

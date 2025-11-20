@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmes d'Entraînement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f1e;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+            animation: gradient-shift 15s ease infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-5%, -5%); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .program-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .program-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .program-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+
+        .program-card.active {
+            border: 2px solid #8b5cf6;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.5);
+        }
+
+        .program-card h3 {
+            color: white;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        .program-card .description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .program-card .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+        }
+
+        .stat {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat strong {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .program-card .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 1.6em;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 2em;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .intervals-container {
+            margin: 25px 0;
+        }
+
+        .interval-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .interval-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .interval-header h4 {
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .slider-group {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .slider-value {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.5);
+        }
+
+        .add-interval-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(167, 139, 250, 0.3);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-interval-btn:hover {
+            border-color: rgba(167, 139, 250, 0.6);
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .progress-panel {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        .progress-panel h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            height: 30px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .progress-stat {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .progress-stat-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .progress-stat-value {
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Programmes d'Entraînement</h1>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn" onclick="showCreateModal()">+ Nouveau Programme</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/'">← Retour</button>
+            </div>
+        </div>
+
+        <!-- Panneau de progression du programme actif -->
+        <div id="activeProgram" class="progress-panel" style="display: none;">
+            <h3 id="activeProgramName">Programme en cours</h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Intervalle Actuel</div>
+                    <div class="progress-stat-value" id="currentInterval">1 / 5</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Puissance</div>
+                    <div class="progress-stat-value" id="currentPower">150W</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Temps Écoulé</div>
+                    <div class="progress-stat-value" id="elapsedTime">05:30</div>
+                </div>
+                <div class="progress-stat">
+                    <div class="progress-stat-label">Temps Restant</div>
+                    <div class="progress-stat-value" id="remainingTime">14:30</div>
+                </div>
+            </div>
+            <button class="btn btn-danger" onclick="stopProgram()" style="width: 100%; margin-top: 15px;">⏹ Arrêter le Programme</button>
+        </div>
+
+        <!-- Liste des programmes -->
+        <div id="programsGrid" class="program-grid"></div>
+
+        <!-- État vide -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <h3>Aucun programme d'entraînement</h3>
+            <p>Créez votre premier programme personnalisé avec des intervalles configurables</p>
+        </div>
+    </div>
+
+    <!-- Modal de création/édition -->
+    <div id="programModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nouveau Programme</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+
+            <form id="programForm" onsubmit="saveProgram(event)">
+                <div class="form-group">
+                    <label for="programName">Nom du programme *</label>
+                    <input type="text" id="programName" required placeholder="Ex: HIIT 30 minutes">
+                </div>
+
+                <div class="form-group">
+                    <label for="programDescription">Description</label>
+                    <textarea id="programDescription" placeholder="Décrivez votre programme d'entraînement..."></textarea>
+                </div>
+
+                <div class="intervals-container">
+                    <h3 style="color: white; margin-bottom: 15px;">Intervalles</h3>
+                    <div id="intervalsList"></div>
+                    <button type="button" class="add-interval-btn" onclick="addInterval()">+ Ajouter un intervalle</button>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 25px;">
+                    <button type="submit" class="btn" style="flex: 1;">💾 Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let programs = [];
+        let editingProgramId = null;
+        let intervalCounter = 0;
+        let activeProgram = null;
+        let progressInterval = null;
+
+        // Charger les programmes au démarrage
+        loadPrograms();
+        checkActiveProgram();
+
+        // Mettre à jour l'état du programme actif toutes les secondes
+        setInterval(checkActiveProgram, 1000);
+
+        // Charger tous les programmes
+        async function loadPrograms() {
+            try {
+                const response = await fetch('/programs');
+                if (response.ok) {
+                    programs = await response.json();
+                    renderPrograms();
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des programmes:', error);
+            }
+        }
+
+        // Afficher les programmes
+        function renderPrograms() {
+            const grid = document.getElementById('programsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (programs.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            grid.innerHTML = '';
+
+            programs.forEach(program => {
+                const card = createProgramCard(program);
+                grid.appendChild(card);
+            });
+        }
+
+        // Créer une carte de programme
+        function createProgramCard(program) {
+            const card = document.createElement('div');
+            card.className = 'program-card';
+            if (activeProgram && activeProgram.program_id === program.id) {
+                card.classList.add('active');
+            }
+
+            const totalDuration = program.intervals.reduce((sum, i) => sum + i.duration_secs, 0);
+            const minutes = Math.floor(totalDuration / 60);
+            const seconds = totalDuration % 60;
+            const durationStr = seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
+
+            card.innerHTML = `
+                <h3>${program.name}</h3>
+                <div class="description">${program.description || 'Aucune description'}</div>
+                <div class="stats">
+                    <div class="stat"><strong>${program.intervals.length}</strong> intervalles</div>
+                    <div class="stat"><strong>${durationStr}</strong> durée</div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-success btn-small" onclick="startProgram('${program.id}')">▶ Démarrer</button>
+                    <button class="btn btn-secondary btn-small" onclick="editProgram('${program.id}')">✎ Éditer</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteProgram('${program.id}')">🗑 Supprimer</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Afficher le modal de création
+        function showCreateModal() {
+            editingProgramId = null;
+            document.getElementById('modalTitle').textContent = 'Nouveau Programme';
+            document.getElementById('programForm').reset();
+            document.getElementById('intervalsList').innerHTML = '';
+            intervalCounter = 0;
+
+            // Ajouter 3 intervalles par défaut
+            addInterval(300, 80, 'Échauffement');
+            addInterval(600, 150, 'Effort');
+            addInterval(300, 60, 'Récupération');
+
+            document.getElementById('programModal').classList.add('show');
+        }
+
+        // Éditer un programme
+        function editProgram(programId) {
+            const program = programs.find(p => p.id === programId);
+            if (!program) return;
+
+            editingProgramId = programId;
+            document.getElementById('modalTitle').textContent = 'Éditer le Programme';
+            document.getElementById('programName').value = program.name;
+            document.getElementById('programDescription').value = program.description || '';
+
+            document.getElementById('intervalsList').innerHTML = '';
+            intervalCounter = 0;
+
+            program.intervals.forEach(interval => {
+                addInterval(interval.duration_secs, interval.power_target, interval.name || '');
+            });
+
+            document.getElementById('programModal').classList.add('show');
+        }
+
+        // Fermer le modal
+        function closeModal() {
+            document.getElementById('programModal').classList.remove('show');
+        }
+
+        // Ajouter un intervalle
+        function addInterval(duration = 60, power = 100, name = '') {
+            intervalCounter++;
+            const intervalsList = document.getElementById('intervalsList');
+
+            const intervalDiv = document.createElement('div');
+            intervalDiv.className = 'interval-item';
+            intervalDiv.id = `interval-${intervalCounter}`;
+
+            intervalDiv.innerHTML = `
+                <div class="interval-header">
+                    <h4>Intervalle ${intervalCounter}</h4>
+                    <button type="button" class="btn btn-danger btn-small" onclick="removeInterval(${intervalCounter})">Supprimer</button>
+                </div>
+                <div class="form-group">
+                    <label>Nom (optionnel)</label>
+                    <input type="text" class="interval-name" value="${name}" placeholder="Ex: Échauffement, Sprint...">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Durée</span>
+                        <span class="slider-value" id="duration-value-${intervalCounter}">${formatDuration(duration)}</span>
+                    </div>
+                    <input type="range" class="interval-duration" min="30" max="1200" step="30" value="${duration}"
+                           oninput="updateDurationDisplay(${intervalCounter}, this.value)">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Puissance</span>
+                        <span class="slider-value" id="power-value-${intervalCounter}">${power}W</span>
+                    </div>
+                    <input type="range" class="interval-power" min="25" max="400" step="5" value="${power}"
+                           oninput="updatePowerDisplay(${intervalCounter}, this.value)">
+                </div>
+            `;
+
+            intervalsList.appendChild(intervalDiv);
+        }
+
+        // Supprimer un intervalle
+        function removeInterval(id) {
+            const interval = document.getElementById(`interval-${id}`);
+            if (interval) {
+                interval.remove();
+            }
+        }
+
+        // Mettre à jour l'affichage de la durée
+        function updateDurationDisplay(id, seconds) {
+            document.getElementById(`duration-value-${id}`).textContent = formatDuration(seconds);
+        }
+
+        // Mettre à jour l'affichage de la puissance
+        function updatePowerDisplay(id, watts) {
+            document.getElementById(`power-value-${id}`).textContent = `${watts}W`;
+        }
+
+        // Formater la durée
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+        }
+
+        // Sauvegarder le programme
+        async function saveProgram(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('programName').value;
+            const description = document.getElementById('programDescription').value;
+
+            // Récupérer tous les intervalles
+            const intervals = [];
+            const intervalItems = document.querySelectorAll('.interval-item');
+
+            intervalItems.forEach(item => {
+                const nameInput = item.querySelector('.interval-name').value;
+                const duration = parseInt(item.querySelector('.interval-duration').value);
+                const power = parseInt(item.querySelector('.interval-power').value);
+
+                intervals.push({
+                    name: nameInput || null,
+                    duration_secs: duration,
+                    power_target: power
+                });
+            });
+
+            if (intervals.length === 0) {
+                alert('Ajoutez au moins un intervalle !');
+                return;
+            }
+
+            const program = {
+                id: editingProgramId || `program-${Date.now()}`,
+                name,
+                description: description || null,
+                intervals
+            };
+
+            try {
+                const url = editingProgramId ? `/program/${editingProgramId}` : '/program';
+                const method = editingProgramId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(program)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    await loadPrograms();
+                } else {
+                    const error = await response.text();
+                    alert(`Erreur: ${error}`);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                alert('Erreur lors de la sauvegarde du programme');
+            }
+        }
+
+        // Supprimer un programme
+        async function deleteProgram(programId) {
+            if (!confirm('Voulez-vous vraiment supprimer ce programme ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/program/${programId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadPrograms();
+                } else {
+                    const error = await response.text();
+                    alert(`Erreur: ${error}`);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la suppression:', error);
+                alert('Erreur lors de la suppression du programme');
+            }
+        }
+
+        // Démarrer un programme
+        async function startProgram(programId) {
+            try {
+                const response = await fetch(`/program/${programId}/start`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    await checkActiveProgram();
+                } else {
+                    const error = await response.text();
+                    alert(`Erreur: ${error}`);
+                }
+            } catch (error) {
+                console.error('Erreur lors du démarrage:', error);
+                alert('Erreur lors du démarrage du programme');
+            }
+        }
+
+        // Arrêter le programme actif
+        async function stopProgram() {
+            try {
+                const response = await fetch('/program/stop', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    await checkActiveProgram();
+                    renderPrograms();
+                } else {
+                    const error = await response.text();
+                    alert(`Erreur: ${error}`);
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'arrêt:', error);
+                alert('Erreur lors de l\'arrêt du programme');
+            }
+        }
+
+        // Vérifier le programme actif
+        async function checkActiveProgram() {
+            try {
+                const response = await fetch('/program/active');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.active === false || !data.program_id) {
+                        // Pas de programme actif
+                        document.getElementById('activeProgram').style.display = 'none';
+                        activeProgram = null;
+                        renderPrograms();
+                    } else {
+                        // Programme actif
+                        activeProgram = data;
+                        updateProgressPanel(data);
+                        renderPrograms();
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification du programme actif:', error);
+            }
+        }
+
+        // Mettre à jour le panneau de progression
+        function updateProgressPanel(state) {
+            document.getElementById('activeProgram').style.display = 'block';
+            document.getElementById('activeProgramName').textContent = state.program_name;
+
+            const progress = (state.total_elapsed / state.total_duration) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${progress}%`;
+            progressBar.textContent = `${Math.round(progress)}%`;
+
+            const currentIntervalName = state.current_interval_name || '';
+            document.getElementById('currentInterval').textContent =
+                `${state.current_interval_index + 1} / ${state.program.intervals.length}${currentIntervalName ? ' - ' + currentIntervalName : ''}`;
+            document.getElementById('currentPower').textContent = `${state.current_power_target}W`;
+            document.getElementById('elapsedTime').textContent = formatTimeDisplay(state.total_elapsed);
+            document.getElementById('remainingTime').textContent = formatTimeDisplay(state.total_duration - state.total_elapsed);
+        }
+
+        // Formater le temps (secondes -> MM:SS)
+        function formatTimeDisplay(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
