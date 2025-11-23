@@ -130,22 +130,46 @@ Uses `anyhow::Result` for error handling. Bluetooth connection failures are non-
 
 ### Web Interface
 
-- Main interface: `static/index.html` - Modern glassmorphism design with:
-  - Real-time RPM tracking with color-coded graphing
-  - 9 predefined training programs (editable via localStorage)
-  - Manual power control with adjustable step sizes (5W, 10W, 25W, 50W)
-  - Auto-start/pause timer based on RPM threshold
-  - Program statistics summary at completion
+- Main interface: `static/index.html` - Modern glassmorphism design with **3-column layout**:
+  - **Left column (160px)**: Programs sidebar
+    - 10 program buttons: Plat (manual), Escalier, Vallée, Collines, Montagne, Col Alpin, Intervalle, Pyramide, Sur mesure, Jeu
+    - Vertical flex distribution with `justify-content: space-evenly`
+    - Buttons use `flex: 1` for equal height distribution
+  - **Center column**: Histogram/game display with mode-specific controls
+    - Difficulty control for standard programs
+    - Custom program editor with random generator (🎲 button)
+    - Manual power control for Plat mode
+    - Space Runner game canvas for Jeu mode
+    - Visual histogram with real-time progression
+  - **Right column (240px)**: Control panel
+    - Date/time display
+    - Power display (3em font, gradient effect)
+    - Timer with auto-start/pause based on RPM
+    - Enlarged playback controls (Pause/Play/Reset with flex: 1)
+  - **Bottom section (218px)**: RPM graph with target line and color-coded tracking
+- Container: 99vh height for better screen utilization
 - Program manager: `static/programs.html` - Create custom training programs
+- **Game Mode**: Space Runner - RPM-controlled arcade game
+  - Ship position controlled by pedaling speed (0-100 RPM)
+  - Asteroids (obstacles) and stars (collectibles)
+  - Real-time score and distance tracking
+  - Particle effects and game over screen
 - Optimized for 11" tablets in landscape mode
-- System shutdown/reboot buttons require sudo passwordless configuration for the user running the server
+- System shutdown/reboot buttons (bottom-right) require sudo passwordless configuration
 
 ### Training Programs
 
-Nine predefined programs included (30 minutes each):
-- Plat, Vallée, Collines, Montagne, Col Alpin, Intervalle, Pyramide, Changement, Altitude
-- Programs stored in `BikeController.programs` (HashMap)
-- Frontend can customize programs via localStorage
+Ten modes available:
+- **Plat** (Manual mode): Direct power control with flat histogram visualization
+- **Escalier** (Stepped): Progressive power levels (formerly "Plat")
+- **Vallée, Collines, Montagne, Col Alpin, Intervalle, Pyramide**: Standard 30-minute programs
+- **Sur mesure** (Custom): Editable program with random generator
+  - 30 intervals of 1 minute each
+  - Random generator: 25-30-35W warm-up, then 50-110W random
+  - Persistent in localStorage
+- **Jeu** (Game): Space Runner arcade mode controlled by RPM
+- Programs stored in `BikeController.programs` (HashMap) for backend execution
+- Frontend programs stored in localStorage for customization
 - Each program has multiple intervals with power targets and durations
 
 ## Device Compatibility

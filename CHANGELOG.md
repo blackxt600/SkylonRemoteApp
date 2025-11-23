@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2025-11-23
+
+### Added
+- **Game Mode - Space Runner** 🎮
+  - RPM-controlled space game with obstacles and star collection
+  - Ship position controlled by pedaling speed (0-100 RPM)
+  - Asteroids to avoid (collision = game over)
+  - Golden stars to collect (100 points each)
+  - Real-time score and distance tracking
+  - Particle effects (explosions and star collection)
+  - RPM indicator bar on game screen
+  - Game over screen with final statistics
+  - Progressive difficulty (speed increases with distance)
+- **Custom Program Random Generator** 🎲
+  - Random power generation button (50-110W range)
+  - Fixed warm-up sequence (25W, 30W, 35W for first 3 intervals)
+  - Automatic save to localStorage
+  - Wider buttons for better usability
+
+### Changed
+- **Complete Interface Redesign** 🎨
+  - New 3-column layout optimized for 11" tablets
+    - Left: Programs sidebar (160px) with vertical flex distribution
+    - Center: Histogram/game display with controls
+    - Right: Control panel (240px) with power, timer, playback
+  - Container height increased to 99vh for better screen utilization
+  - RPM section height increased to 218px
+  - Programs sidebar with improved vertical spacing
+    - `justify-content: space-evenly` for even distribution
+    - `flex: 1` on buttons for equal height
+    - Reduced padding (6px) and gap (3px)
+- **Program Names Reorganization**
+  - "Manuel" → "Plat" (manual mode with flat power control)
+  - "Plat" → "Escalier" (stepped power program)
+  - All program buttons now use sentence case (e.g., "Sur mesure", "Jeu")
+- **Flat Mode Enhancements** 📊
+  - Manual mode now displays histogram with uniform bar heights
+  - Power adjustments update all 30 bars simultaneously
+  - Both center and right panel controls update the histogram
+  - Visual feedback for power changes
+- **Playback Controls Improvements** 🎮
+  - Pause/Play/Reset buttons significantly enlarged
+  - `flex: 1` for full width utilization
+  - Font size increased to 1.3em
+  - Padding increased to 14px vertical, 24px horizontal
+  - Better touch targets for tablet usage
+- **System Buttons Repositioned**
+  - Shutdown and Reboot buttons moved to bottom-right corner
+  - Better visual balance with fullscreen button (top-left)
+
+### Technical
+- `static/index.html`: Complete rewrite with 3-column grid layout
+- Game engine with canvas rendering and collision detection
+- Enhanced responsive design for tablet optimization
+- Conditional display logic for different modes (manual, program, custom, game)
+- CSS improvements: glassmorphism effects, better spacing, optimized heights
+
 ## [1.9.0] - 2025-11-17
 
 ### Changed

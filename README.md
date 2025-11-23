@@ -21,14 +21,17 @@ HTTP server in Rust to control a Kettler elliptical bike via Bluetooth with a mo
 - ⚡ Real-time data updates
 
 ### Web Interface
-- 🎨 Modern dark glassmorphism design
-- 📱 Responsive for 11" tablet in landscape mode
+- 🎨 Modern dark glassmorphism design with 3-column layout
+- 📱 Optimized for 11" tablet in landscape mode (99vh container)
 - ⏱ Timer with auto-start/pause based on RPM
-- 📊 Visual progress histogram
-- 🎯 9 predefined training programs
+- 📊 Visual progress histogram with real-time tracking
+- 🎯 10 modes: Flat (manual), 8 training programs + Game mode
+- 🎮 **Space Runner game** - RPM-controlled with obstacles and collectibles
+- 🎲 Custom program editor with random generator
 - 🔧 Difficulty control in 5W increments
 - 🖥 Fullscreen mode
 - 📈 Real-time display: RPM, Power, Connection Status
+- 🎯 Enlarged playback controls for better touch interaction
 
 ## 🚀 Installation
 
@@ -78,15 +81,29 @@ The server will be accessible at `http://0.0.0.0:8080`
 
 ### Control Modes
 
-#### Manual Mode
-- Direct power control with +/- buttons
-- Adjustable steps: 5W, 10W, 25W, 50W
+#### Flat Mode (Manual)
+- Direct power control with +/- buttons in center panel
+- Visual histogram with uniform bar heights
+- All bars update simultaneously when power changes
 - Range: 25-400W
 
 #### Program Mode
-- Select one of the 9 programs
+- Select one of the 8 training programs
 - Adjust difficulty: -100W to +100W in 5W increments
 - Timer automatically starts/pauses based on your activity (RPM)
+- Visual histogram shows program progression
+
+#### Custom Mode
+- Create personalized 30-minute programs
+- Edit individual interval power (25-400W)
+- Random generator with warm-up sequence (25-30-35W)
+- Persistent storage in browser
+
+#### Game Mode
+- Space Runner: RPM-controlled arcade game
+- Avoid asteroids, collect stars
+- Progressive difficulty
+- Real-time score and distance tracking
 
 ## 🏋️ Training Programs
 
@@ -94,15 +111,16 @@ Each program lasts **30 minutes** with power adjustment per minute:
 
 | Program | Description | Intensity |
 |---------|-------------|-----------|
-| **Flat** | Moderate constant effort | ⚡⚡ |
-| **Valley** | Gentle variations | ⚡⚡⚡ |
-| **Hills** | Two distinct hills | ⚡⚡⚡⚡ |
-| **Mountain** | Two peaks | ⚡⚡⚡⚡ |
-| **Alpine Pass** | Progressive climb | ⚡⚡⚡⚡⚡ |
-| **Interval** | Intense intervals | ⚡⚡⚡⚡⚡ |
-| **Pyramid** | Symmetrical climb and descent | ⚡⚡⚡⚡ |
-| **Change** | Varied rhythm | ⚡⚡⚡ |
-| **Altitude** | Irregular variations | ⚡⚡⚡⚡ |
+| **Plat** | Manual mode with flat histogram | ⚡ |
+| **Escalier** | Stepped power progression | ⚡⚡ |
+| **Vallée** | Gentle variations | ⚡⚡⚡ |
+| **Collines** | Two distinct hills | ⚡⚡⚡⚡ |
+| **Montagne** | Two peaks | ⚡⚡⚡⚡ |
+| **Col Alpin** | Progressive climb | ⚡⚡⚡⚡⚡ |
+| **Intervalle** | Intense intervals | ⚡⚡⚡⚡⚡ |
+| **Pyramide** | Symmetrical climb and descent | ⚡⚡⚡⚡ |
+| **Sur mesure** | Customizable program with editor | Custom |
+| **Jeu** | Space Runner game mode | Fun! 🎮 |
 
 ## 🔌 API
 
@@ -278,5 +296,5 @@ For questions or issues, see:
 
 ---
 
-**Current Version:** 1.8.2
-**Date:** 2025-11-16
+**Current Version:** 2.0.0
+**Date:** 2025-11-23
