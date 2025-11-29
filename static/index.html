@@ -148,6 +148,7 @@
             display: flex;
             gap: 10px;
             min-height: 0;
+            max-height: calc(100% - 90px);
         }
 
         .histogram-scale {
@@ -546,13 +547,14 @@
 
         /* Custom program editor */
         .custom-editor {
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 6px;
             padding: 8px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
             max-height: 120px;
+            overflow: hidden;
         }
 
         .custom-editor-header {
@@ -649,6 +651,68 @@
         .manual-power-unit {
             font-size: 0.5em;
             color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Universal power control */
+        .universal-power-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            height: 70px;
+        }
+
+        .universal-power-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2.5em;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .universal-power-btn:active {
+            transform: scale(0.9);
+        }
+
+        .universal-power-btn:hover {
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.6);
+        }
+
+        .universal-power-display {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .universal-power-label {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .universal-power-value {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            text-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        .universal-power-unit {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
         }
 
         /* Game container */
@@ -804,41 +868,6 @@
             <div class="histogram-section">
                 <div class="histogram-title" id="histogramTitle">Sélectionnez un programme</div>
 
-                <!-- Difficulty control (only shown for programs) -->
-                <div class="difficulty-control" id="difficultyControl" style="display: none;">
-                    <button class="difficulty-btn" onclick="decreaseDifficulty()">−</button>
-                    <div class="difficulty-display">
-                        <div class="difficulty-label">Difficulté</div>
-                        <div class="difficulty-value" id="difficultyLevel">Normal</div>
-                    </div>
-                    <button class="difficulty-btn" onclick="increaseDifficulty()">+</button>
-                </div>
-
-                <!-- Custom program editor (only shown for custom program) -->
-                <div class="custom-editor" id="customEditor" style="display: none;">
-                    <div class="custom-editor-header">
-                        <span class="custom-editor-title">Éditer les intervalles (30 min)</span>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="custom-editor-btn" onclick="randomizeCustomProgram()" title="Générer aléatoirement">🎲</button>
-                            <button class="custom-editor-btn" onclick="resetCustomProgram()" title="Réinitialiser">↻</button>
-                        </div>
-                    </div>
-                    <div class="custom-intervals-grid" id="customIntervalsGrid">
-                        <!-- Intervals will be inserted here -->
-                    </div>
-                </div>
-
-                <!-- Manual power control (only shown in manual mode) -->
-                <div class="manual-power-control" id="manualPowerControl" style="display: none;">
-                    <button class="manual-power-btn" onclick="decreaseManualPower()">−</button>
-                    <div class="manual-power-display">
-                        <div class="manual-power-label">Puissance</div>
-                        <div class="manual-power-value" id="manualPowerValue">25</div>
-                        <div class="manual-power-unit">Watts</div>
-                    </div>
-                    <button class="manual-power-btn" onclick="increaseManualPower()">+</button>
-                </div>
-
                 <!-- Game container (only shown in game mode) -->
                 <div class="game-container" id="gameContainer" style="display: none;">
                     <canvas id="gameCanvas" class="game-canvas"></canvas>
@@ -875,6 +904,31 @@
                         <!-- Bars will be inserted here -->
                     </div>
                 </div>
+
+                <!-- Custom program editor (only shown for custom program) -->
+                <div class="custom-editor" id="customEditor" style="display: none;">
+                    <div class="custom-editor-header">
+                        <span class="custom-editor-title">Programme personnalisé (30 min)</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="custom-editor-btn" onclick="randomizeCustomProgram()" title="Générer aléatoirement">🎲</button>
+                            <button class="custom-editor-btn" onclick="resetCustomProgram()" title="Réinitialiser">↻</button>
+                        </div>
+                    </div>
+                    <div class="custom-intervals-grid" id="customIntervalsGrid">
+                        <!-- Inputs will be inserted here by renderCustomEditor() -->
+                    </div>
+                </div>
+
+                <!-- Universal power control (shown for all programs except game and custom) -->
+                <div class="universal-power-control" id="universalPowerControl" style="display: none;">
+                    <button class="universal-power-btn" onclick="decreaseUniversalControl()">−</button>
+                    <div class="universal-power-display">
+                        <div class="universal-power-label" id="universalControlLabel">Puissance</div>
+                        <div class="universal-power-value" id="universalPowerValue">25</div>
+                        <div class="universal-power-unit" id="universalControlUnit">Watts</div>
+                    </div>
+                    <button class="universal-power-btn" onclick="increaseUniversalControl()">+</button>
+                </div>
             </div>
 
             <!-- COLONNE 3 : PANNEAU DE CONTRÔLE -->
@@ -890,10 +944,6 @@
                     <div class="power-label">Puissance</div>
                     <div class="power-value" id="powerValue">--</div>
                     <div class="power-unit">Watts</div>
-                    <div class="power-buttons">
-                        <button class="power-btn" onclick="decreasePower()">−</button>
-                        <button class="power-btn" onclick="increasePower()">+</button>
-                    </div>
                 </div>
 
                 <!-- Timer -->
@@ -1147,6 +1197,9 @@
 
         // Power control
         async function setPower(watts) {
+            // Ensure power is always within valid range
+            watts = Math.max(25, Math.min(400, watts));
+
             try {
                 const response = await fetch(`/power/${watts}`, { method: 'POST' });
                 if (response.ok) {
@@ -1182,36 +1235,83 @@
 
         function updateDisplay() {
             document.getElementById('powerValue').textContent = currentPower;
-            // Also update manual power display if in manual mode
+        }
+
+        // Universal control functions (handles difficulty offset for all programs)
+        function updateUniversalControl() {
+            const label = document.getElementById('universalControlLabel');
+            const value = document.getElementById('universalPowerValue');
+            const unit = document.getElementById('universalControlUnit');
+
             if (currentProgram === 'none') {
-                updateManualPowerDisplay();
+                // Plat mode: show actual power value
+                label.textContent = 'Puissance';
+                value.textContent = currentPower;
+                value.style.color = '#a78bfa';
+                unit.textContent = 'Watts';
+            } else {
+                // Other programs: show difficulty/offset
+                label.textContent = 'Difficulté';
+
+                if (difficultyAdjustment > 0) {
+                    value.textContent = `+${difficultyAdjustment}`;
+                    value.style.color = '#f44336';
+                } else if (difficultyAdjustment < 0) {
+                    value.textContent = `${difficultyAdjustment}`;
+                    value.style.color = '#28a745';
+                } else {
+                    value.textContent = 'Normal';
+                    value.style.color = 'white';
+                }
+                unit.textContent = 'W';
             }
         }
 
-        // Manual power control functions
-        function updateManualPowerDisplay() {
-            document.getElementById('manualPowerValue').textContent = currentPower;
-        }
-
-        async function increaseManualPower() {
-            const newPower = Math.min(currentPower + powerStep, 400);
-            await setPower(newPower);
-
-            // Update all bars in "none" (Plat) program
+        async function increaseUniversalControl() {
             if (currentProgram === 'none') {
-                programs.none = Array(30).fill(newPower);
+                // Plat mode: increase actual power
+                await increasePower();
+                updateUniversalControl();
+            } else {
+                // Other programs: increase difficulty adjustment (offset)
+                difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+                updateUniversalControl();
                 renderHistogram();
+
+                // Update current power if timer is running
+                if (programActive && programs[currentProgram]) {
+                    const currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        const basePower = programs[currentProgram][currentMinute];
+                        // Real power = base + offset, but always >= 25W
+                        const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        await setPower(adjustedPower);
+                    }
+                }
             }
         }
 
-        async function decreaseManualPower() {
-            const newPower = Math.max(currentPower - powerStep, 25);
-            await setPower(newPower);
-
-            // Update all bars in "none" (Plat) program
+        async function decreaseUniversalControl() {
             if (currentProgram === 'none') {
-                programs.none = Array(30).fill(newPower);
+                // Plat mode: decrease actual power
+                await decreasePower();
+                updateUniversalControl();
+            } else {
+                // Other programs: decrease difficulty adjustment (offset)
+                difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+                updateUniversalControl();
                 renderHistogram();
+
+                // Update current power if timer is running
+                if (programActive && programs[currentProgram]) {
+                    const currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        const basePower = programs[currentProgram][currentMinute];
+                        // Real power = base + offset, but always >= 25W
+                        const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        await setPower(adjustedPower);
+                    }
+                }
             }
         }
 
@@ -1236,29 +1336,27 @@
             event.target.classList.add('active');
 
             // Update interface
-            const difficultyControl = document.getElementById('difficultyControl');
+            const universalPowerControl = document.getElementById('universalPowerControl');
             const customEditor = document.getElementById('customEditor');
-            const manualPowerControl = document.getElementById('manualPowerControl');
             const gameContainer = document.getElementById('gameContainer');
             const histogramContainer = document.querySelector('.histogram-container');
             const histogramTitle = document.getElementById('histogramTitle');
 
             // Hide all controls first
-            difficultyControl.style.display = 'none';
+            universalPowerControl.style.display = 'none';
             customEditor.style.display = 'none';
-            manualPowerControl.style.display = 'none';
             gameContainer.style.display = 'none';
             histogramContainer.style.display = 'flex';
 
             if (program === 'jeu') {
-                // Game mode
+                // Game mode - no controls shown
                 histogramTitle.textContent = programNames[currentProgram] || program;
                 gameContainer.style.display = 'flex';
                 histogramContainer.style.display = 'none';
                 startGame();
             } else if (program === 'none') {
-                // Plat mode: manual power control with histogram display
-                manualPowerControl.style.display = 'flex';
+                // Plat mode: power control with histogram display
+                universalPowerControl.style.display = 'flex';
                 histogramTitle.textContent = 'Mode Plat';
 
                 // Initialize with current power or default
@@ -1267,17 +1365,19 @@
                 }
 
                 renderHistogram();
-                updateManualPowerDisplay();
+                updateUniversalControl();
                 resetTimer();
                 startProgramStats();
                 setPower(currentPower);
             } else if (program === 'custom') {
-                // Custom program mode
+                // Custom program mode - show editor and difficulty control
                 customEditor.style.display = 'flex';
-                renderCustomEditor();
+                universalPowerControl.style.display = 'flex';
                 histogramTitle.textContent = programNames[currentProgram] || program;
-                difficultyAdjustment = 0;
+                renderCustomEditor();
                 renderHistogram();
+                difficultyAdjustment = 0;
+                updateUniversalControl();
                 resetTimer();
                 startProgramStats();
 
@@ -1286,11 +1386,11 @@
                     setPower(initialPower);
                 }
             } else {
-                // Regular program mode
-                difficultyControl.style.display = 'flex';
+                // Regular program mode - control adjusts difficulty
+                universalPowerControl.style.display = 'flex';
                 histogramTitle.textContent = programNames[currentProgram] || program;
                 difficultyAdjustment = 0;
-                updateDifficultyDisplay();
+                updateUniversalControl();
                 renderHistogram();
                 resetTimer();
                 startProgramStats();
@@ -1357,13 +1457,14 @@
             histogram.innerHTML = '';
 
             const powerValues = programs[currentProgram];
-            // Don't apply difficulty adjustment for custom program
-            const isCustom = currentProgram === 'custom';
-            const adjustment = isCustom ? 0 : difficultyAdjustment;
-            const maxAdjusted = Math.max(...powerValues.map(p => Math.max(0, p + adjustment)));
+            // Apply difficulty adjustment to ALL programs
+            const adjustment = difficultyAdjustment;
+            // Ensure all values are >= 25W (real power = base + offset, min 25W)
+            const maxAdjusted = Math.max(25, ...powerValues.map(p => Math.max(25, p + adjustment)));
 
             powerValues.forEach((power, index) => {
-                const adjustedPower = Math.max(0, power + adjustment);
+                // Real power = base power + difficulty offset, always >= 25W
+                const adjustedPower = Math.max(25, power + adjustment);
                 const bar = document.createElement('div');
                 bar.className = 'histogram-bar';
                 bar.style.height = `${(adjustedPower / maxAdjusted) * 100}%`;
@@ -1377,7 +1478,7 @@
                     bar.classList.add('pending');
                 }
 
-                bar.title = `Minute ${index + 1}: ${adjustedPower}W`;
+                bar.title = `Minute ${index + 1}: ${adjustedPower}W (base: ${power}W)`;
                 histogram.appendChild(bar);
             });
 
@@ -1387,7 +1488,7 @@
             scale.innerHTML = '';
             for (let i = 4; i >= 0; i--) {
                 const div = document.createElement('div');
-                div.textContent = step * i;
+                div.textContent = Math.max(0, step * i);
                 scale.appendChild(div);
             }
         }
@@ -1411,9 +1512,9 @@
 
             if (programs[currentProgram] && currentMinute < 30) {
                 const basePower = programs[currentProgram][currentMinute];
-                // Don't apply difficulty adjustment for custom program
-                const adjustment = (currentProgram === 'custom') ? 0 : difficultyAdjustment;
-                const adjustedPower = Math.max(25, basePower + adjustment);
+                // Real power = base power + difficulty offset
+                // Ensure power is always between 25W and 400W
+                const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
 
                 if (isTimerRunning && currentMinute >= 0) {
                     setPower(adjustedPower);
@@ -1424,19 +1525,39 @@
         // RPM Chart
         function initRpmChart() {
             rpmChart = document.getElementById('rpmChart');
-            if (!rpmChart) return;
+            if (!rpmChart) {
+                console.error('RPM Chart canvas not found');
+                return;
+            }
 
             const container = rpmChart.parentElement;
+            if (!container) {
+                console.error('RPM Chart container not found');
+                return;
+            }
+
             if (container.clientWidth === 0 || container.clientHeight === 0) {
+                console.log('RPM Chart container not ready, retrying...');
                 setTimeout(initRpmChart, 200);
                 return;
             }
 
-            rpmChartCtx = rpmChart.getContext('2d');
-            rpmChart.width = container.clientWidth;
-            rpmChart.height = container.clientHeight;
-            rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
-            drawRpmChart();
+            try {
+                rpmChartCtx = rpmChart.getContext('2d');
+                if (!rpmChartCtx) {
+                    console.error('Failed to get 2D context for RPM chart');
+                    return;
+                }
+
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+
+                console.log(`RPM Chart initialized: ${rpmChart.width}x${rpmChart.height}`);
+                drawRpmChart();
+            } catch (error) {
+                console.error('Error initializing RPM chart:', error);
+            }
         }
 
         function drawRpmChart() {
@@ -2098,9 +2219,12 @@
             loadTargetRpm();
             loadCustomProgram();
 
-            setTimeout(() => {
-                initRpmChart();
-            }, 100);
+            // Initialize RPM chart after DOM is fully ready and laid out
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    initRpmChart();
+                }, 200);
+            });
 
             updateStatus();
             setPower(25);

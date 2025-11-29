@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2025-11-29
+
+### Fixed
+- **RPM Chart Initialization** 📊
+  - Improved timing and error handling for canvas initialization
+  - Added `requestAnimationFrame` wrapper for better DOM readiness detection
+  - Added comprehensive console logging for debugging
+  - Added defensive checks for null containers and contexts
+  - Increased retry timeout from 100ms to 200ms
+  - Fixed chart not rendering on initial page load
+
+### Added
+- **Custom Program Editor Interface** ✏️
+  - Added missing HTML structure for custom program editor
+  - Grid layout with 30 editable input fields (one per minute)
+  - Random generator button (🎲) for automatic program creation
+  - Reset button (↻) to restore default values
+  - Visible when "Sur mesure" program is selected
+
+### Changed
+- **Universal Power Control Enhancement** 🎛️
+  - **Plat Mode**: Control now shows actual power value (25-400W)
+    - Label: "Puissance" instead of "Difficulté"
+    - +/- buttons directly adjust power level
+    - Updates histogram bars in real-time
+  - **Other Programs**: Control shows difficulty offset
+    - Label: "Difficulté"
+    - Displays offset value (+/-100W) or "Normal"
+    - Color-coded: red for positive, green for negative, white for normal
+- **Program Selection Logic**
+  - Custom program now shows both editor and difficulty control
+  - Proper show/hide logic for all interface components
+  - Eliminated duplicate power display references
+
+### Technical
+- `static/index.html`: +87 lines
+  - Enhanced `initRpmChart()` with try-catch and detailed logging
+  - Added `customEditor` div with grid layout for 30 intervals
+  - Refactored `updateUniversalControl()` to handle Plat mode differently
+  - Updated `increaseUniversalControl()` and `decreaseUniversalControl()` with mode-specific logic
+  - Removed reference to non-existent `updateManualPowerDisplay()` function
+  - Added CSS for `.custom-editor` with `display: none` and `overflow: hidden`
+  - Fixed `selectProgram()` to properly show/hide custom editor
+
 ## [2.0.0] - 2025-11-23
 
 ### Added
