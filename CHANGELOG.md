@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] - 2025-11-29
+
+### Changed
+- **Interface Reorganization - Right Control Panel** 🎨
+  - Moved system buttons (Shutdown/Reboot) from fixed bottom-right position to control panel
+  - Moved connection status from fixed top-right position to control panel
+  - New vertical order in right column (top to bottom):
+    1. Date/Time
+    2. Connection Status (🟢/🔴 Connected/Disconnected)
+    3. System Buttons (Shutdown | Reboot)
+    4. Power Display
+    5. Timer
+    6. Playback Controls
+  - All controls now integrated within the main 3-column layout
+  - Improved visual consistency with unified panel backgrounds
+
+### Technical
+- `static/index.html`: Restructured control panel layout
+  - Removed `position: fixed` from `.connection-status` and `.system-btns`
+  - Created `.system-btns-panel` for inline system buttons
+  - Updated CSS for compact integration:
+    - Connection status: `padding: 8px`, centered content, `font-size: 0.75em`
+    - System buttons: `flex: 1` layout, gradient backgrounds with hover effects
+    - Consistent `rgba(0, 0, 0, 0.2)` backgrounds across panels
+  - Eliminated overlapping fixed-position elements
+
 ## [2.1.0] - 2025-11-29
 
 ### Fixed

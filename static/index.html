@@ -427,18 +427,14 @@
 
         /* Connection status */
         .connection-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background: rgba(30, 30, 40, 0.8);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
-            z-index: 100;
         }
 
         .status-dot {
@@ -451,6 +447,12 @@
 
         .status-dot.connected {
             background: #10b981;
+        }
+
+        .connection-status span {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         @keyframes pulse {
@@ -477,34 +479,54 @@
             justify-content: center;
         }
 
-        .system-btns {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        .system-btns-panel {
             display: flex;
-            gap: 10px;
-            z-index: 100;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px;
         }
 
         .system-btn {
-            padding: 12px 20px;
-            border-radius: 12px;
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
             border: none;
             color: white;
             font-weight: 600;
+            font-size: 0.75em;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(15px);
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .system-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .system-btn:active {
+            transform: scale(0.95);
         }
 
         .shutdown-btn {
-            background: rgba(220, 38, 38, 0.8);
+            background: linear-gradient(145deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .shutdown-btn:hover {
+            box-shadow: 0 5px 12px rgba(220, 38, 38, 0.6);
         }
 
         .reboot-btn {
-            background: rgba(234, 88, 12, 0.8);
+            background: linear-gradient(145deg, #ea580c, #c2410c);
+            box-shadow: 0 3px 8px rgba(234, 88, 12, 0.4);
+        }
+
+        .reboot-btn:hover {
+            box-shadow: 0 5px 12px rgba(234, 88, 12, 0.6);
         }
 
         /* Difficulty controls for programs */
@@ -826,26 +848,8 @@
 </head>
 
 <body>
-    <!-- Connection status -->
-    <div class="connection-status">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Déconnecté</span>
-    </div>
-
     <!-- Fullscreen button -->
     <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
-
-    <!-- System buttons -->
-    <div class="system-btns">
-        <button class="system-btn shutdown-btn" onclick="confirmShutdown()">
-            <span>🔴</span>
-            <span>Éteindre</span>
-        </button>
-        <button class="system-btn reboot-btn" onclick="confirmReboot()">
-            <span>🔄</span>
-            <span>Redémarrer</span>
-        </button>
-    </div>
 
     <div class="container">
         <!-- Interface principale : 3 colonnes -->
@@ -937,6 +941,24 @@
                 <div class="datetime-display">
                     <div class="datetime-time" id="datetimeTime">14:30:00</div>
                     <div class="datetime-date" id="datetimeDate">23 novembre 2025</div>
+                </div>
+
+                <!-- Connection status -->
+                <div class="connection-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Déconnecté</span>
+                </div>
+
+                <!-- System buttons -->
+                <div class="system-btns-panel">
+                    <button class="system-btn shutdown-btn" onclick="confirmShutdown()">
+                        <span>🔴</span>
+                        <span>Éteindre</span>
+                    </button>
+                    <button class="system-btn reboot-btn" onclick="confirmReboot()">
+                        <span>🔄</span>
+                        <span>Redémarrer</span>
+                    </button>
                 </div>
 
                 <!-- Power Control -->
