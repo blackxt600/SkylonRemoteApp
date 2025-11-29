@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.1] - 2025-11-29
+
+### Changed
+- **Target RPM Control Buttons** 🎯
+  - Widened +/− buttons for better usability
+  - Button width: `min-width: 50px` (increased from 26px square)
+  - Height maintained at 26px (unchanged)
+  - Added horizontal padding: `0 12px`
+  - Rectangular shape instead of square
+  - Improved touch targets for tablet use
+
+### Technical
+- `static/index.html`: Updated `.target-rpm-btn` CSS
+  - Changed from `width: 26px` to `min-width: 50px`
+  - Added `padding: 0 12px`
+  - Buttons now ~2x wider while maintaining same height
+
 ## [2.3.0] - 2025-11-29
 
 ### Changed
