@@ -680,18 +680,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
-            padding: 12px;
+            gap: 15px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            height: 70px;
+            height: 80px;
         }
 
         .universal-power-btn {
-            width: 60px;
+            flex: 1;
             height: 60px;
-            border-radius: 50%;
-            font-size: 2.5em;
+            border-radius: 12px;
+            font-size: 3em;
             background: linear-gradient(145deg, #8b5cf6, #7c3aed);
             color: white;
             border: none;
@@ -701,40 +701,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 700;
         }
 
         .universal-power-btn:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
 
         .universal-power-btn:hover {
             box-shadow: 0 8px 20px rgba(124, 58, 237, 0.6);
+            transform: translateY(-2px);
         }
 
         .universal-power-display {
             text-align: center;
-            min-width: 120px;
+            min-width: 100px;
         }
 
         .universal-power-label {
-            font-size: 0.75em;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: none;
         }
 
         .universal-power-value {
-            font-size: 2.2em;
+            font-size: 2.5em;
             font-weight: 800;
             color: white;
-            line-height: 1.2;
+            line-height: 1;
             text-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
         }
 
         .universal-power-unit {
-            font-size: 0.7em;
-            color: rgba(255, 255, 255, 0.6);
-            font-weight: 600;
+            display: none;
         }
 
         /* Game container */
@@ -2240,6 +2237,14 @@
             updateDisplay();
             loadTargetRpm();
             loadCustomProgram();
+
+            // Initialize default program (Plat mode)
+            programActive = true;
+            programs.none = Array(30).fill(currentPower);
+            renderHistogram();
+            updateUniversalControl();
+            document.getElementById('universalPowerControl').style.display = 'flex';
+            document.getElementById('histogramTitle').textContent = 'Mode Plat';
 
             // Initialize RPM chart after DOM is fully ready and laid out
             requestAnimationFrame(() => {

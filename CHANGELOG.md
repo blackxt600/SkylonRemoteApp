@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] - 2025-11-29
+
+### Changed
+- **Universal Power Control - Redesigned Interface** 🎛️
+  - Extra-wide rectangular buttons instead of circular buttons
+  - Button width: `flex: 1` (takes full available width)
+  - Button height: 60px (increased from 50px circles)
+  - Font size: 3em for −/+ symbols (increased from 2.5em)
+  - Shape: Rounded rectangles (`border-radius: 12px`) instead of circles
+  - Hidden text labels: "Difficulté" and "Watts" no longer displayed
+  - Simplified display: Only the value shown in center (e.g., "+5", "Normal", "25")
+  - Value font size: 2.5em (increased from 2.2em)
+  - Improved hover effect: `translateY(-2px)` for depth perception
+  - Better touch targets for tablet use
+
+### Fixed
+- **Default Program Initialization** 📊
+  - Fixed histogram not displaying on page load
+  - Plat mode now properly initialized at startup
+  - Default program: 30 bars at 25W displayed immediately
+  - Universal control visible and functional from start
+  - Title displays "Mode Plat" on initialization
+  - `programActive` correctly set to `true` on load
+
+### Technical
+- `static/index.html`: Universal control styling updates
+  - `.universal-power-btn`: Changed from fixed `width: 60px` circular to `flex: 1` rectangular
+  - `.universal-power-label`: Added `display: none`
+  - `.universal-power-unit`: Added `display: none`
+  - `.universal-power-value`: Increased to `2.5em`, `line-height: 1`
+  - Added default program initialization in `initializeApp()`
+    - Sets `programActive = true`
+    - Initializes `programs.none` array
+    - Calls `renderHistogram()`, `updateUniversalControl()`
+    - Shows control panel and sets title
+
 ## [2.2.0] - 2025-11-29
 
 ### Changed
