@@ -1930,7 +1930,7 @@
 
             // Update ship position based on RPM (0-100 RPM range)
             const targetY = 1 - Math.min(currentRpm / 100, 1);
-            gameState.shipY += (targetY - gameState.shipY) * 0.1;
+            gameState.shipY += (targetY - gameState.shipY) * 0.35;
 
             // Update speed based on distance
             gameState.speed = 3 + Math.floor(gameState.distance / 500) * 0.5;
