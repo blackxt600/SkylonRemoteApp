@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Vélo Elliptique</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f1e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            animation: gradient-shift 20s ease infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            50% {
+                transform: translate(-5%, -5%);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            width: 100%;
+            max-width: 1600px;
+            height: 99vh;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Layout principal : 3 colonnes + section RPM en bas */
+        .main-interface {
+            display: grid;
+            grid-template-columns: 160px 1fr 240px;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* COLONNE 1 : PROGRAMMES */
+        .programs-sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow-y: auto;
+            justify-content: space-evenly;
+        }
+
+        .program-btn {
+            padding: 10px 8px;
+            font-size: 0.8em;
+            font-weight: 600;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            white-space: nowrap;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .program-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(3px);
+        }
+
+        .program-btn.active {
+            background: #ef4444;
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            transform: scale(1.02);
+        }
+
+        /* COLONNE 2 : HISTOGRAMME CENTRAL */
+        .histogram-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .histogram-title {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            margin-bottom: 3px;
+        }
+
+        .histogram-container {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            min-height: 0;
+            max-height: calc(100% - 90px);
+        }
+
+        .histogram-scale {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.4);
+            padding-right: 5px;
+            min-width: 35px;
+        }
+
+        .program-histogram {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            position: relative;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 10px;
+        }
+
+        .histogram-bar {
+            flex: 1;
+            border-radius: 3px 3px 0 0;
+            transition: all 0.3s;
+            position: relative;
+            min-width: 2px;
+        }
+
+        .histogram-bar.completed {
+            background: linear-gradient(180deg, #10b981, #059669);
+            opacity: 0.8;
+        }
+
+        .histogram-bar.current {
+            background: linear-gradient(180deg, #fbbf24, #f59e0b);
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
+        }
+
+        .histogram-bar.pending {
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 0.6;
+        }
+
+        /* COLONNE 3 : PANNEAU DE CONTRÔLE */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .datetime-display {
+            text-align: center;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .datetime-time {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #a78bfa;
+            margin-bottom: 2px;
+        }
+
+        .datetime-date {
+            font-size: 0.65em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .power-control {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .power-label {
+            font-size: 0.65em;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .power-value {
+            font-size: 3em;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(to bottom, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.3));
+        }
+
+        .power-unit {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            margin-top: -3px;
+        }
+
+        .power-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 3px;
+        }
+
+        .power-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.8em;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+            box-shadow: 0 5px 12px rgba(124, 58, 237, 0.4);
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .power-btn:active {
+            transform: scale(0.9);
+        }
+
+        .power-btn:hover {
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.6);
+        }
+
+        .timer-display {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .timer-value {
+            font-size: 1.8em;
+            font-weight: 800;
+            font-family: 'Inter', monospace;
+            letter-spacing: 1px;
+            color: white;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .timer-label {
+            font-size: 0.6em;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .playback-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .playback-btn {
+            flex: 1;
+            padding: 14px 24px;
+            font-size: 1.3em;
+            font-weight: 700;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s;
+        }
+
+        .playback-btn:active {
+            transform: scale(0.95);
+        }
+
+        .playback-btn.running {
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* SECTION RPM EN BAS */
+        .rpm-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px;
+            height: 218px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .rpm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rpm-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .rpm-current {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .rpm-chart-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .target-rpm-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+        }
+
+        .target-rpm-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .target-rpm-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            min-width: 50px;
+            height: 26px;
+            padding: 0 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .target-rpm-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .target-rpm-value {
+            color: #fbbf24;
+            font-weight: 800;
+            font-size: 1em;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        /* Connection status */
+        .connection-status {
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        .connection-status span {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .fullscreen-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(30, 30, 40, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.3em;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .system-btns-panel {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .system-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .system-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .system-btn:active {
+            transform: scale(0.95);
+        }
+
+        .shutdown-btn {
+            background: linear-gradient(145deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 8px rgba(220, 38, 38, 0.4);
+        }
+
+        .shutdown-btn:hover {
+            box-shadow: 0 5px 12px rgba(220, 38, 38, 0.6);
+        }
+
+        .reboot-btn {
+            background: linear-gradient(145deg, #ea580c, #c2410c);
+            box-shadow: 0 3px 8px rgba(234, 88, 12, 0.4);
+        }
+
+        .reboot-btn:hover {
+            box-shadow: 0 5px 12px rgba(234, 88, 12, 0.6);
+        }
+
+        /* Difficulty controls for programs */
+        .difficulty-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .difficulty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 1.1em;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .difficulty-display {
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .difficulty-label {
+            font-size: 0.6em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .difficulty-value {
+            font-size: 1em;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        /* Custom program editor */
+        .custom-editor {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            max-height: 120px;
+            overflow: hidden;
+        }
+
+        .custom-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .custom-editor-title {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        .custom-editor-btn {
+            min-width: 40px;
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-intervals-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .custom-interval-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-align: center;
+            padding: 4px 2px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .custom-interval-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* Manual power control */
+        .manual-power-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .manual-power-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 1.1em;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .manual-power-display {
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .manual-power-label {
+            font-size: 0.6em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .manual-power-value {
+            font-size: 1em;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .manual-power-unit {
+            font-size: 0.5em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Universal power control */
+        .universal-power-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            height: 80px;
+        }
+
+        .universal-power-btn {
+            flex: 1;
+            height: 60px;
+            border-radius: 12px;
+            font-size: 3em;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .universal-power-btn:active {
+            transform: scale(0.95);
+        }
+
+        .universal-power-btn:hover {
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .universal-power-display {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .universal-power-label {
+            display: none;
+        }
+
+        .universal-power-value {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+            text-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+
+        .universal-power-unit {
+            display: none;
+        }
+
+        /* Game container */
+        .game-container {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(180deg, #0a0a1a 0%, #1a1a2e 100%);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .game-stat {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-stat-label {
+            font-size: 0.65em;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+        }
+
+        .game-stat-value {
+            font-size: 1.2em;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-top: 2px;
+        }
+
+        .game-over-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 30px 40px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            display: none;
+        }
+
+        .game-over-title {
+            font-size: 2em;
+            font-weight: 800;
+            color: #ef4444;
+            margin-bottom: 15px;
+        }
+
+        .game-over-stats {
+            margin: 20px 0;
+        }
+
+        .game-over-stat {
+            font-size: 1.1em;
+            margin: 8px 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .game-restart-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 700;
+            background: linear-gradient(145deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 1024px) {
+            .main-interface {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+
+            .programs-sidebar {
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .program-btn {
+                min-width: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Fullscreen button -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Mode plein écran">⛶</button>
+
+    <div class="container">
+        <!-- Interface principale : 3 colonnes -->
+        <div class="main-interface">
+            <!-- COLONNE 1 : PROGRAMMES -->
+            <div class="programs-sidebar">
+                <button class="program-btn active" onclick="selectProgram('none')">Plat</button>
+                <button class="program-btn" onclick="selectProgram('plat')">Escalier</button>
+                <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
+                <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
+                <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
+                <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
+                <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
+                <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                <button class="program-btn" onclick="selectProgram('custom')">Sur mesure</button>
+                <button class="program-btn" onclick="selectProgram('jeu')">🎮 Jeu</button>
+            </div>
+
+            <!-- COLONNE 2 : HISTOGRAMME -->
+            <div class="histogram-section">
+                <div class="histogram-title" id="histogramTitle">Sélectionnez un programme</div>
+
+                <!-- Game container (only shown in game mode) -->
+                <div class="game-container" id="gameContainer" style="display: none;">
+                    <canvas id="gameCanvas" class="game-canvas"></canvas>
+                    <div class="game-overlay">
+                        <div class="game-stat">
+                            <div class="game-stat-label">Score</div>
+                            <div class="game-stat-value" id="gameScore">0</div>
+                        </div>
+                        <div class="game-stat">
+                            <div class="game-stat-label">Distance</div>
+                            <div class="game-stat-value" id="gameDistance">0m</div>
+                        </div>
+                    </div>
+                    <div class="game-over-screen" id="gameOverScreen">
+                        <div class="game-over-title">🎮 Game Over!</div>
+                        <div class="game-over-stats">
+                            <div class="game-over-stat">Score: <span id="finalScore">0</span></div>
+                            <div class="game-over-stat">Distance: <span id="finalDistance">0m</span></div>
+                            <div class="game-over-stat">⭐ Étoiles: <span id="finalStars">0</span></div>
+                        </div>
+                        <button class="game-restart-btn" onclick="restartGame()">Rejouer</button>
+                    </div>
+                </div>
+
+                <div class="histogram-container">
+                    <div class="histogram-scale" id="histogramScale">
+                        <div>200</div>
+                        <div>150</div>
+                        <div>100</div>
+                        <div>50</div>
+                        <div>0</div>
+                    </div>
+                    <div class="program-histogram" id="histogram">
+                        <!-- Bars will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Custom program editor (only shown for custom program) -->
+                <div class="custom-editor" id="customEditor" style="display: none;">
+                    <div class="custom-editor-header">
+                        <span class="custom-editor-title">Programme personnalisé (30 min)</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="custom-editor-btn" onclick="randomizeCustomProgram()" title="Générer aléatoirement">🎲</button>
+                            <button class="custom-editor-btn" onclick="resetCustomProgram()" title="Réinitialiser">↻</button>
+                        </div>
+                    </div>
+                    <div class="custom-intervals-grid" id="customIntervalsGrid">
+                        <!-- Inputs will be inserted here by renderCustomEditor() -->
+                    </div>
+                </div>
+
+                <!-- Universal power control (shown for all programs except game and custom) -->
+                <div class="universal-power-control" id="universalPowerControl" style="display: none;">
+                    <button class="universal-power-btn" onclick="decreaseUniversalControl()">−</button>
+                    <div class="universal-power-display">
+                        <div class="universal-power-label" id="universalControlLabel">Puissance</div>
+                        <div class="universal-power-value" id="universalPowerValue">25</div>
+                        <div class="universal-power-unit" id="universalControlUnit">Watts</div>
+                    </div>
+                    <button class="universal-power-btn" onclick="increaseUniversalControl()">+</button>
+                </div>
+            </div>
+
+            <!-- COLONNE 3 : PANNEAU DE CONTRÔLE -->
+            <div class="control-panel">
+                <!-- Date/Time -->
+                <div class="datetime-display">
+                    <div class="datetime-time" id="datetimeTime">14:30:00</div>
+                    <div class="datetime-date" id="datetimeDate">23 novembre 2025</div>
+                </div>
+
+                <!-- Connection status -->
+                <div class="connection-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Déconnecté</span>
+                </div>
+
+                <!-- System buttons -->
+                <div class="system-btns-panel">
+                    <button class="system-btn shutdown-btn" onclick="confirmShutdown()">
+                        <span>🔴</span>
+                        <span>Éteindre</span>
+                    </button>
+                    <button class="system-btn reboot-btn" onclick="confirmReboot()">
+                        <span>🔄</span>
+                        <span>Redémarrer</span>
+                    </button>
+                </div>
+
+                <!-- Power Control -->
+                <div class="power-control">
+                    <div class="power-label">Puissance</div>
+                    <div class="power-value" id="powerValue">--</div>
+                    <div class="power-unit">Watts</div>
+                </div>
+
+                <!-- Timer -->
+                <div class="timer-display">
+                    <div class="timer-label">Temps d'exercice</div>
+                    <div class="timer-value" id="timer">00:00:00</div>
+                </div>
+
+                <!-- Playback controls -->
+                <div class="playback-controls">
+                    <button class="playback-btn" id="playBtn" onclick="toggleTimer()">▶</button>
+                    <button class="playback-btn" onclick="resetTimer()">↻</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION RPM EN BAS -->
+        <div class="rpm-section">
+            <div class="rpm-header">
+                <div class="rpm-title">📊 RPM</div>
+                <div class="rpm-current" id="rpmCurrent">-- tr/min</div>
+            </div>
+
+            <div class="target-rpm-control">
+                <span class="target-rpm-label">RPM Cible:</span>
+                <button onclick="decreaseTargetRpm()" class="target-rpm-btn">−</button>
+                <span id="targetRpmDisplay" class="target-rpm-value">40</span>
+                <button onclick="increaseTargetRpm()" class="target-rpm-btn">+</button>
+            </div>
+
+            <div class="rpm-chart-container">
+                <canvas id="rpmChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentPower = 25;
+        let powerStep = 5;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let rpmAutoStarted = false;
+        let currentProgram = 'none';
+        let programActive = false;
+        let difficultyAdjustment = 0;
+        let lastManualPowerChange = 0; // Timestamp of last manual power change
+        let appInitialized = false; // Prevent multiple initializations
+
+        // RPM Chart variables
+        let rpmHistory = [];
+        const MAX_RPM_HISTORY = 60;
+        let rpmChart = null;
+        let rpmChartCtx = null;
+        let targetRpm = 40;
+
+        // Program statistics
+        let programStats = {
+            active: false,
+            startTime: null,
+            rpmSamples: [],
+            rpmAboveTarget: 0,
+            rpmBelowTarget: 0,
+            totalSamples: 0
+        };
+
+        // Default programs (30 minutes, power per minute)
+        const defaultPrograms = {
+            'none': Array(30).fill(25), // Plat mode - all intervals at same power
+            'plat': [
+                25, 25, 25, 35, 35, 35, 35, 35, 35, 35,
+                50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+                35, 35, 35, 35, 35, 35, 25, 25, 25, 25
+            ],
+            'vallee': [
+                25, 25, 25, 70, 90, 110, 120, 130, 120, 110,
+                80, 70, 90, 110, 130, 140, 130, 110, 90, 100,
+                120, 110, 100, 90, 80, 70, 60, 25, 25, 25
+            ],
+            'collines': [
+                25, 25, 25, 50, 70, 90, 110, 130, 120, 100,
+                80, 60, 40, 30, 50, 70, 90, 110, 130, 120,
+                100, 80, 60, 55, 50, 45, 40, 25, 25, 25
+            ],
+            'montagne': [
+                25, 25, 25, 80, 120, 140, 160, 150, 130, 110,
+                90, 80, 100, 120, 140, 160, 180, 160, 140, 120,
+                100, 90, 80, 70, 60, 60, 60, 25, 25, 25
+            ],
+            'alpin': [
+                25, 25, 25, 50, 60, 70, 80, 90, 100, 110,
+                120, 130, 140, 150, 160, 160, 150, 130, 110, 90,
+                70, 60, 50, 45, 40, 35, 30, 25, 25, 25
+            ],
+            'intervalle': [
+                25, 25, 25, 80, 50, 80, 50, 90, 50, 110,
+                50, 110, 60, 125, 60, 125, 50, 110, 50, 90,
+                50, 100, 50, 90, 50, 70, 50, 25, 25, 25
+            ],
+            'pyramide': [
+                25, 25, 25, 40, 50, 60, 70, 80, 90, 100,
+                110, 115, 120, 120, 120, 115, 110, 100, 90, 80,
+                70, 60, 50, 40, 30, 25, 25, 25, 25, 25
+            ],
+            'custom': Array(30).fill(50)
+        };
+
+        let programs = { ...defaultPrograms };
+
+        const programNames = {
+            'plat': 'Escalier',
+            'vallee': 'Vallée',
+            'collines': 'Collines',
+            'montagne': 'Montagne',
+            'alpin': 'Col Alpin',
+            'intervalle': 'Intervalle',
+            'pyramide': 'Pyramide',
+            'custom': 'Sur Mesure',
+            'jeu': 'Space Runner'
+        };
+
+        // Load custom program from localStorage
+        function loadCustomProgram() {
+            const saved = localStorage.getItem('customProgram');
+            if (saved) {
+                try {
+                    programs.custom = JSON.parse(saved);
+                } catch (e) {
+                    programs.custom = Array(30).fill(50);
+                }
+            }
+        }
+
+        // Save custom program to localStorage
+        function saveCustomProgram() {
+            localStorage.setItem('customProgram', JSON.stringify(programs.custom));
+        }
+
+        // Render custom program editor
+        function renderCustomEditor() {
+            const grid = document.getElementById('customIntervalsGrid');
+            grid.innerHTML = '';
+
+            programs.custom.forEach((power, index) => {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'custom-interval-input';
+                input.min = 25;
+                input.max = 400;
+                input.value = power;
+                input.title = `Minute ${index + 1}`;
+                input.addEventListener('change', (e) => {
+                    let val = parseInt(e.target.value);
+                    if (isNaN(val)) val = 25;
+                    val = Math.max(25, Math.min(400, val));
+                    e.target.value = val;
+                    programs.custom[index] = val;
+                    saveCustomProgram();
+                    renderHistogram();
+                });
+                grid.appendChild(input);
+            });
+        }
+
+        // Reset custom program to default
+        function resetCustomProgram() {
+            if (confirm('Réinitialiser le programme sur mesure à 50W pour tous les intervalles ?')) {
+                programs.custom = Array(30).fill(50);
+                saveCustomProgram();
+                renderCustomEditor();
+                renderHistogram();
+            }
+        }
+
+        // Randomize custom program
+        function randomizeCustomProgram() {
+            // First 3 intervals are always 25, 30, 35
+            programs.custom[0] = 25;
+            programs.custom[1] = 30;
+            programs.custom[2] = 35;
+
+            // Remaining intervals (4-30) are random between 50 and 110
+            for (let i = 3; i < 30; i++) {
+                programs.custom[i] = Math.floor(Math.random() * (110 - 50 + 1)) + 50;
+            }
+
+            saveCustomProgram();
+            renderCustomEditor();
+            renderHistogram();
+        }
+
+        // Timer functions
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = formatTime(timerSeconds);
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('playBtn');
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isTimerRunning = false;
+                btn.textContent = '▶';
+                btn.classList.remove('running');
+            } else {
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                    updateProgramProgress();
+
+                    if (programActive && timerSeconds >= 1800) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isTimerRunning = false;
+                        btn.textContent = '▶';
+                        btn.classList.remove('running');
+                        stopProgramStats();
+                    }
+                }, 1000);
+                isTimerRunning = true;
+                btn.textContent = '⏸';
+                btn.classList.add('running');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            isTimerRunning = false;
+            rpmAutoStarted = false;
+            updateTimerDisplay();
+            const btn = document.getElementById('playBtn');
+            btn.textContent = '▶';
+            btn.classList.remove('running');
+
+            if (programActive) {
+                difficultyAdjustment = 0;
+                updateDifficultyDisplay();
+                renderHistogram();
+            }
+
+            updateProgramProgress();
+        }
+
+        // Power control
+        async function setPower(watts, isManualChange = false) {
+            // Ensure power is always within valid range
+            watts = Math.max(25, Math.min(400, watts));
+
+            try {
+                const response = await fetch(`/power/${watts}`, { method: 'POST' });
+                if (response.ok) {
+                    currentPower = watts;
+                    updateDisplay();
+
+                    // Mark this as a manual change to prevent server overwrite
+                    if (isManualChange) {
+                        lastManualPowerChange = Date.now();
+                        console.log('Puissance manuelle définie:', watts, 'W');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du réglage de la puissance:', error);
+            }
+        }
+
+        async function increasePower() {
+            const newPower = Math.min(currentPower + powerStep, 400);
+            await setPower(newPower, true); // Mark as manual change
+
+            // Update all bars in "none" (Plat) program
+            if (currentProgram === 'none') {
+                programs.none = Array(30).fill(newPower);
+                renderHistogram();
+            }
+        }
+
+        async function decreasePower() {
+            const newPower = Math.max(currentPower - powerStep, 25);
+            await setPower(newPower, true); // Mark as manual change
+
+            // Update all bars in "none" (Plat) program
+            if (currentProgram === 'none') {
+                programs.none = Array(30).fill(newPower);
+                renderHistogram();
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('powerValue').textContent = currentPower;
+        }
+
+        // Universal control functions (handles difficulty offset for all programs)
+        function updateUniversalControl() {
+            const label = document.getElementById('universalControlLabel');
+            const value = document.getElementById('universalPowerValue');
+            const unit = document.getElementById('universalControlUnit');
+
+            if (currentProgram === 'none') {
+                // Plat mode: show actual power value
+                label.textContent = 'Puissance';
+                value.textContent = currentPower;
+                value.style.color = '#a78bfa';
+                unit.textContent = 'Watts';
+            } else {
+                // Other programs: show difficulty/offset
+                label.textContent = 'Difficulté';
+
+                if (difficultyAdjustment > 0) {
+                    value.textContent = `+${difficultyAdjustment}`;
+                    value.style.color = '#f44336';
+                } else if (difficultyAdjustment < 0) {
+                    value.textContent = `${difficultyAdjustment}`;
+                    value.style.color = '#28a745';
+                } else {
+                    value.textContent = 'Normal';
+                    value.style.color = 'white';
+                }
+                unit.textContent = 'W';
+            }
+        }
+
+        async function increaseUniversalControl() {
+            if (currentProgram === 'none') {
+                // Plat mode: increase actual power
+                await increasePower();
+                updateUniversalControl();
+            } else {
+                // Other programs: increase difficulty adjustment (offset)
+                difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+                updateUniversalControl();
+                renderHistogram();
+
+                // Update current power if timer is running
+                if (programActive && programs[currentProgram]) {
+                    const currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        const basePower = programs[currentProgram][currentMinute];
+                        // Real power = base + offset, but always >= 25W
+                        const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        await setPower(adjustedPower);
+                    }
+                }
+            }
+        }
+
+        async function decreaseUniversalControl() {
+            if (currentProgram === 'none') {
+                // Plat mode: decrease actual power
+                await decreasePower();
+                updateUniversalControl();
+            } else {
+                // Other programs: decrease difficulty adjustment (offset)
+                difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+                updateUniversalControl();
+                renderHistogram();
+
+                // Update current power if timer is running
+                if (programActive && programs[currentProgram]) {
+                    const currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        const basePower = programs[currentProgram][currentMinute];
+                        // Real power = base + offset, but always >= 25W
+                        const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        await setPower(adjustedPower);
+                    }
+                }
+            }
+        }
+
+        // Program selection
+        function selectProgram(program) {
+            currentProgram = program;
+            programActive = (program !== 'jeu');
+
+            // Stop game if it was running
+            if (gameState.running && program !== 'jeu') {
+                gameState.running = false;
+                if (gameAnimationFrame) {
+                    cancelAnimationFrame(gameAnimationFrame);
+                    gameAnimationFrame = null;
+                }
+            }
+
+            // Update button states
+            document.querySelectorAll('.program-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update interface
+            const universalPowerControl = document.getElementById('universalPowerControl');
+            const customEditor = document.getElementById('customEditor');
+            const gameContainer = document.getElementById('gameContainer');
+            const histogramContainer = document.querySelector('.histogram-container');
+            const histogramTitle = document.getElementById('histogramTitle');
+
+            // Hide all controls first
+            universalPowerControl.style.display = 'none';
+            customEditor.style.display = 'none';
+            gameContainer.style.display = 'none';
+            histogramContainer.style.display = 'flex';
+
+            if (program === 'jeu') {
+                // Game mode - no controls shown
+                histogramTitle.textContent = programNames[currentProgram] || program;
+                gameContainer.style.display = 'flex';
+                histogramContainer.style.display = 'none';
+                startGame();
+            } else if (program === 'none') {
+                // Plat mode: power control with histogram display
+                universalPowerControl.style.display = 'flex';
+                histogramTitle.textContent = 'Mode Plat';
+
+                // Initialize with current power or default
+                if (!programs.none || programs.none[0] !== currentPower) {
+                    programs.none = Array(30).fill(currentPower);
+                }
+
+                renderHistogram();
+                updateUniversalControl();
+                resetTimer();
+                startProgramStats();
+                setPower(currentPower);
+            } else if (program === 'custom') {
+                // Custom program mode - show editor and difficulty control
+                customEditor.style.display = 'flex';
+                universalPowerControl.style.display = 'flex';
+                histogramTitle.textContent = programNames[currentProgram] || program;
+                renderCustomEditor();
+                renderHistogram();
+                difficultyAdjustment = 0;
+                updateUniversalControl();
+                resetTimer();
+                startProgramStats();
+
+                if (programs[currentProgram]) {
+                    const initialPower = Math.max(25, programs[currentProgram][0]);
+                    setPower(initialPower);
+                }
+            } else {
+                // Regular program mode - control adjusts difficulty
+                universalPowerControl.style.display = 'flex';
+                histogramTitle.textContent = programNames[currentProgram] || program;
+                difficultyAdjustment = 0;
+                updateUniversalControl();
+                renderHistogram();
+                resetTimer();
+                startProgramStats();
+
+                if (programs[currentProgram]) {
+                    const initialPower = Math.max(25, programs[currentProgram][0] + difficultyAdjustment);
+                    setPower(initialPower);
+                }
+            }
+        }
+
+        // Difficulty control
+        function increaseDifficulty() {
+            if (!programActive) return;
+            difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+            updateDifficultyDisplay();
+            renderHistogram();
+
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        function decreaseDifficulty() {
+            if (!programActive) return;
+            difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+            updateDifficultyDisplay();
+            renderHistogram();
+
+            if (isTimerRunning && programs[currentProgram]) {
+                const currentMinute = Math.floor(timerSeconds / 60);
+                if (currentMinute < 30) {
+                    const basePower = programs[currentProgram][currentMinute];
+                    const adjustedPower = Math.max(25, basePower + difficultyAdjustment);
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        function updateDifficultyDisplay() {
+            const display = document.getElementById('difficultyLevel');
+            if (difficultyAdjustment > 0) {
+                display.textContent = `+${difficultyAdjustment}W`;
+                display.style.color = '#f44336';
+            } else if (difficultyAdjustment < 0) {
+                display.textContent = `${difficultyAdjustment}W`;
+                display.style.color = '#28a745';
+            } else {
+                display.textContent = 'Normal';
+                display.style.color = '#a78bfa';
+            }
+        }
+
+        // Histogram rendering
+        function renderHistogram() {
+            if (!programActive || !programs[currentProgram]) return;
+
+            const histogram = document.getElementById('histogram');
+            histogram.innerHTML = '';
+
+            const powerValues = programs[currentProgram];
+            // Apply difficulty adjustment to ALL programs
+            const adjustment = difficultyAdjustment;
+            // Ensure all values are >= 25W (real power = base + offset, min 25W)
+            const maxAdjusted = Math.max(25, ...powerValues.map(p => Math.max(25, p + adjustment)));
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+
+            powerValues.forEach((power, index) => {
+                // Real power = base power + difficulty offset, always >= 25W
+                const adjustedPower = Math.max(25, power + adjustment);
+                const bar = document.createElement('div');
+                bar.className = 'histogram-bar';
+                bar.style.height = `${(adjustedPower / maxAdjusted) * 100}%`;
+
+                // Apply appropriate class based on current progress
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                } else {
+                    bar.classList.add('pending');
+                }
+
+                bar.title = `Minute ${index + 1}: ${adjustedPower}W (base: ${power}W)`;
+                histogram.appendChild(bar);
+            });
+
+            // Update scale - display actual power values corresponding to bar heights
+            const scale = document.getElementById('histogramScale');
+            scale.innerHTML = '';
+
+            // Create 5 evenly spaced labels from maxAdjusted to 0
+            for (let i = 4; i >= 0; i--) {
+                const div = document.createElement('div');
+                const value = Math.round((maxAdjusted / 4) * i);
+                div.textContent = value;
+                scale.appendChild(div);
+            }
+        }
+
+        function updateProgramProgress() {
+            if (!programActive) return;
+
+            const currentMinute = Math.floor(timerSeconds / 60);
+            const bars = document.querySelectorAll('.histogram-bar');
+
+            // Update bar colors for ALL programs (including PLAT/none)
+            bars.forEach((bar, index) => {
+                bar.classList.remove('completed', 'current', 'pending');
+                if (index < currentMinute) {
+                    bar.classList.add('completed');
+                } else if (index === currentMinute) {
+                    bar.classList.add('current');
+                } else {
+                    bar.classList.add('pending');
+                }
+            });
+
+            // Only update power for non-PLAT programs (PLAT uses manual control)
+            if (currentProgram !== 'none' && programs[currentProgram] && currentMinute < 30) {
+                const basePower = programs[currentProgram][currentMinute];
+                // Real power = base power + difficulty offset
+                // Ensure power is always between 25W and 400W
+                const adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+
+                if (isTimerRunning && currentMinute >= 0) {
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // RPM Chart
+        function initRpmChart() {
+            rpmChart = document.getElementById('rpmChart');
+            if (!rpmChart) {
+                console.error('RPM Chart canvas not found');
+                return;
+            }
+
+            const container = rpmChart.parentElement;
+            if (!container) {
+                console.error('RPM Chart container not found');
+                return;
+            }
+
+            if (container.clientWidth === 0 || container.clientHeight === 0) {
+                console.log('RPM Chart container not ready, retrying...');
+                setTimeout(initRpmChart, 200);
+                return;
+            }
+
+            try {
+                rpmChartCtx = rpmChart.getContext('2d');
+                if (!rpmChartCtx) {
+                    console.error('Failed to get 2D context for RPM chart');
+                    return;
+                }
+
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                rpmHistory = Array(MAX_RPM_HISTORY).fill(0);
+
+                console.log(`RPM Chart initialized: ${rpmChart.width}x${rpmChart.height}`);
+                drawRpmChart();
+            } catch (error) {
+                console.error('Error initializing RPM chart:', error);
+            }
+        }
+
+        function drawRpmChart() {
+            if (!rpmChartCtx || !rpmChart) return;
+
+            const width = rpmChart.width;
+            const height = rpmChart.height;
+            const padding = 40;
+            const chartWidth = width - padding * 2;
+            const chartHeight = height - padding * 2;
+
+            rpmChartCtx.clearRect(0, 0, width, height);
+
+            const maxRpm = Math.max(...rpmHistory, targetRpm, 100);
+            const roundedMax = Math.ceil(maxRpm / 20) * 20;
+
+            // Grid
+            rpmChartCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            rpmChartCtx.lineWidth = 1;
+
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartHeight * i) / 4;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.moveTo(padding, y);
+                rpmChartCtx.lineTo(width - padding, y);
+                rpmChartCtx.stroke();
+
+                const value = roundedMax - (roundedMax * i) / 4;
+                rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                rpmChartCtx.font = '11px Inter';
+                rpmChartCtx.textAlign = 'right';
+                rpmChartCtx.fillText(Math.round(value), padding - 10, y + 4);
+            }
+
+            // Target line
+            const targetY = height - padding - (targetRpm / roundedMax) * chartHeight;
+            rpmChartCtx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            rpmChartCtx.lineWidth = 2;
+            rpmChartCtx.setLineDash([5, 5]);
+            rpmChartCtx.beginPath();
+            rpmChartCtx.moveTo(padding, targetY);
+            rpmChartCtx.lineTo(width - padding, targetY);
+            rpmChartCtx.stroke();
+            rpmChartCtx.setLineDash([]);
+
+            // RPM curve with conditional coloring
+            if (rpmHistory.length > 0) {
+                const pointSpacing = chartWidth / (MAX_RPM_HISTORY - 1);
+
+                // Draw area segments
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
+
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    const color = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 0.15)'
+                        : 'rgba(239, 68, 68, 0.15)';
+
+                    rpmChartCtx.fillStyle = color;
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.lineTo(x2, height - padding);
+                    rpmChartCtx.lineTo(x1, height - padding);
+                    rpmChartCtx.closePath();
+                    rpmChartCtx.fill();
+                }
+
+                // Draw line segments
+                rpmChartCtx.lineWidth = 2.5;
+                for (let i = 0; i < rpmHistory.length - 1; i++) {
+                    const x1 = padding + i * pointSpacing;
+                    const y1 = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+                    const x2 = padding + (i + 1) * pointSpacing;
+                    const y2 = height - padding - (rpmHistory[i + 1] / roundedMax) * chartHeight;
+
+                    const avgRpm = (rpmHistory[i] + rpmHistory[i + 1]) / 2;
+                    rpmChartCtx.strokeStyle = avgRpm >= targetRpm
+                        ? 'rgba(34, 197, 94, 1)'
+                        : 'rgba(239, 68, 68, 1)';
+
+                    rpmChartCtx.beginPath();
+                    rpmChartCtx.moveTo(x1, y1);
+                    rpmChartCtx.lineTo(x2, y2);
+                    rpmChartCtx.stroke();
+                }
+
+                // Last point
+                const lastX = padding + (rpmHistory.length - 1) * pointSpacing;
+                const lastY = height - padding - (rpmHistory[rpmHistory.length - 1] / roundedMax) * chartHeight;
+                const lastRpm = rpmHistory[rpmHistory.length - 1];
+                const lastColor = lastRpm >= targetRpm ? 'rgba(34, 197, 94, 1)' : 'rgba(239, 68, 68, 1)';
+
+                rpmChartCtx.fillStyle = lastColor;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+                rpmChartCtx.fill();
+            }
+        }
+
+        function addRpmToHistory(rpm) {
+            rpmHistory.push(rpm);
+            if (rpmHistory.length > MAX_RPM_HISTORY) {
+                rpmHistory.shift();
+            }
+            drawRpmChart();
+        }
+
+        // Target RPM control
+        function loadTargetRpm() {
+            const saved = localStorage.getItem('targetRpm');
+            if (saved) {
+                targetRpm = parseInt(saved);
+                document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            }
+        }
+
+        function saveTargetRpm() {
+            localStorage.setItem('targetRpm', targetRpm);
+        }
+
+        function increaseTargetRpm() {
+            targetRpm += 5;
+            if (targetRpm > 200) targetRpm = 200;
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        function decreaseTargetRpm() {
+            targetRpm -= 5;
+            if (targetRpm < 20) targetRpm = 20;
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        // Program stats
+        function startProgramStats() {
+            programStats = {
+                active: true,
+                startTime: Date.now(),
+                rpmSamples: [],
+                rpmAboveTarget: 0,
+                rpmBelowTarget: 0,
+                totalSamples: 0
+            };
+        }
+
+        function stopProgramStats() {
+            if (!programStats.active) return;
+            programStats.active = false;
+            // TODO: Show program summary
+        }
+
+        function recordRpmSample(rpm) {
+            if (!programStats.active || !programActive) return;
+
+            programStats.rpmSamples.push(rpm);
+            programStats.totalSamples++;
+
+            if (rpm >= targetRpm) {
+                programStats.rpmAboveTarget++;
+            } else {
+                programStats.rpmBelowTarget++;
+            }
+        }
+
+        // Status updates
+        async function updateStatus() {
+            try {
+                const response = await fetch('/status');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Update connection status
+                    const statusDot = document.getElementById('statusDot');
+                    const statusText = document.getElementById('statusText');
+                    if (data.connected) {
+                        statusDot.classList.add('connected');
+                        statusText.textContent = 'Connecté';
+                    } else {
+                        statusDot.classList.remove('connected');
+                        statusText.textContent = 'Déconnecté';
+                    }
+
+                    // Update RPM display
+                    document.getElementById('rpmCurrent').textContent = data.rpm + ' tr/min';
+
+                    // Update power if significant change
+                    // BUT: Don't overwrite if we just made a manual change (within last 2 seconds)
+                    const timeSinceManualChange = Date.now() - lastManualPowerChange;
+                    const allowServerUpdate = timeSinceManualChange > 2000; // Wait 2 seconds after manual change
+
+                    if (allowServerUpdate && Math.abs(data.power - currentPower) > 5) {
+                        currentPower = data.power;
+                        updateDisplay();
+                    }
+
+                    // Add RPM to history
+                    addRpmToHistory(data.rpm);
+                    recordRpmSample(data.rpm);
+
+                    // Auto-start/pause timer
+                    if (data.rpm > 0 && !isTimerRunning) {
+                        toggleTimer();
+                        rpmAutoStarted = true;
+                    }
+
+                    if (data.rpm === 0 && rpmAutoStarted && isTimerRunning) {
+                        toggleTimer();
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération du statut:', error);
+            }
+        }
+
+        // System controls
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Erreur plein écran: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function confirmShutdown() {
+            if (confirm('⚠️ Voulez-vous vraiment ÉTEINDRE le Raspberry Pi ?')) {
+                fetch('/system/shutdown', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => alert('🔴 ' + data.message))
+                    .catch(error => {
+                        console.error('Erreur arrêt:', error);
+                        alert('❌ Erreur lors de l\'arrêt');
+                    });
+            }
+        }
+
+        function confirmReboot() {
+            if (confirm('⚠️ Voulez-vous vraiment REDÉMARRER le Raspberry Pi ?')) {
+                fetch('/system/reboot', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => alert('🔄 ' + data.message))
+                    .catch(error => {
+                        console.error('Erreur redémarrage:', error);
+                        alert('❌ Erreur lors du redémarrage');
+                    });
+            }
+        }
+
+        // ========== GAME LOGIC ==========
+        let gameCanvas, gameCtx;
+        let gameState = {
+            running: false,
+            score: 0,
+            distance: 0,
+            starsCollected: 0,
+            speed: 3,
+            shipY: 0.5,
+            obstacles: [],
+            stars: [],
+            particles: []
+        };
+        let gameAnimationFrame = null;
+        let lastSpawnTime = 0;
+
+        function startGame() {
+            gameCanvas = document.getElementById('gameCanvas');
+            if (!gameCanvas) return;
+
+            const container = gameCanvas.parentElement;
+            gameCanvas.width = container.clientWidth;
+            gameCanvas.height = container.clientHeight;
+            gameCtx = gameCanvas.getContext('2d');
+
+            // Reset game state
+            gameState = {
+                running: true,
+                score: 0,
+                distance: 0,
+                starsCollected: 0,
+                speed: 3,
+                shipY: 0.5,
+                obstacles: [],
+                stars: [],
+                particles: []
+            };
+
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('gameScore').textContent = '0';
+            document.getElementById('gameDistance').textContent = '0m';
+
+            lastSpawnTime = Date.now();
+            gameLoop();
+        }
+
+        function stopGame() {
+            gameState.running = false;
+            if (gameAnimationFrame) {
+                cancelAnimationFrame(gameAnimationFrame);
+                gameAnimationFrame = null;
+            }
+
+            // Show game over screen
+            document.getElementById('gameOverScreen').style.display = 'block';
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalDistance').textContent = Math.floor(gameState.distance) + 'm';
+            document.getElementById('finalStars').textContent = gameState.starsCollected;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function gameLoop() {
+            if (!gameState.running) return;
+
+            const currentRpm = rpmHistory[rpmHistory.length - 1] || 0;
+            updateGameState(currentRpm);
+            renderGame();
+
+            gameAnimationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        function updateGameState(currentRpm) {
+            const width = gameCanvas.width;
+            const height = gameCanvas.height;
+
+            // Update ship position based on RPM (0-100 RPM range)
+            const targetY = 1 - Math.min(currentRpm / 100, 1);
+            gameState.shipY += (targetY - gameState.shipY) * 0.1;
+
+            // Update speed based on distance
+            gameState.speed = 3 + Math.floor(gameState.distance / 500) * 0.5;
+
+            // Update distance
+            gameState.distance += gameState.speed * 0.1;
+
+            // Spawn obstacles and stars
+            const now = Date.now();
+            if (now - lastSpawnTime > 1500 - Math.min(gameState.distance, 1000)) {
+                lastSpawnTime = now;
+
+                // 60% chance of obstacle, 40% chance of star
+                if (Math.random() > 0.4) {
+                    gameState.obstacles.push({
+                        x: width,
+                        y: Math.random() * 0.8 + 0.1,
+                        size: 30 + Math.random() * 20,
+                        rotation: Math.random() * Math.PI * 2
+                    });
+                } else {
+                    gameState.stars.push({
+                        x: width,
+                        y: Math.random() * 0.8 + 0.1,
+                        size: 20,
+                        rotation: 0
+                    });
+                }
+            }
+
+            // Update obstacles
+            gameState.obstacles = gameState.obstacles.filter(obs => {
+                obs.x -= gameState.speed;
+                obs.rotation += 0.02;
+
+                // Check collision with ship
+                const shipX = width * 0.2;
+                const shipY = gameState.shipY * height;
+                const shipSize = 30;
+
+                const dx = obs.x - shipX;
+                const dy = obs.y * height - shipY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < (obs.size + shipSize) / 2) {
+                    // Collision!
+                    createExplosion(shipX, shipY);
+                    stopGame();
+                    return false;
+                }
+
+                return obs.x > -obs.size;
+            });
+
+            // Update stars
+            gameState.stars = gameState.stars.filter(star => {
+                star.x -= gameState.speed;
+                star.rotation += 0.05;
+
+                // Check collection
+                const shipX = width * 0.2;
+                const shipY = gameState.shipY * height;
+                const shipSize = 30;
+
+                const dx = star.x - shipX;
+                const dy = star.y * height - shipY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < (star.size + shipSize) / 2) {
+                    // Collected!
+                    gameState.score += 100;
+                    gameState.starsCollected++;
+                    createStarParticles(star.x, star.y * height);
+                    return false;
+                }
+
+                return star.x > -star.size;
+            });
+
+            // Update particles
+            gameState.particles = gameState.particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                return p.life > 0;
+            });
+
+            // Update score and display
+            gameState.score += Math.floor(gameState.speed * 0.1);
+            document.getElementById('gameScore').textContent = gameState.score;
+            document.getElementById('gameDistance').textContent = Math.floor(gameState.distance) + 'm';
+        }
+
+        function renderGame() {
+            const width = gameCanvas.width;
+            const height = gameCanvas.height;
+
+            // Clear canvas
+            gameCtx.fillStyle = '#0a0a1a';
+            gameCtx.fillRect(0, 0, width, height);
+
+            // Draw stars background
+            drawStarfield();
+
+            // Draw obstacles
+            gameState.obstacles.forEach(obs => {
+                drawAsteroid(obs.x, obs.y * height, obs.size, obs.rotation);
+            });
+
+            // Draw stars
+            gameState.stars.forEach(star => {
+                drawStar(star.x, star.y * height, star.size, star.rotation);
+            });
+
+            // Draw particles
+            gameState.particles.forEach(p => {
+                gameCtx.fillStyle = p.color;
+                gameCtx.globalAlpha = p.life;
+                gameCtx.fillRect(p.x, p.y, p.size, p.size);
+                gameCtx.globalAlpha = 1;
+            });
+
+            // Draw ship
+            const shipX = width * 0.2;
+            const shipY = gameState.shipY * height;
+            drawShip(shipX, shipY);
+
+            // Draw RPM indicator
+            drawRpmIndicator();
+        }
+
+        function drawStarfield() {
+            const width = gameCanvas.width;
+            const height = gameCanvas.height;
+
+            gameCtx.fillStyle = '#ffffff';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 137 + gameState.distance * 2) % width;
+                const y = (i * 197) % height;
+                const size = (i % 3) + 1;
+                gameCtx.globalAlpha = 0.3 + (i % 4) * 0.2;
+                gameCtx.fillRect(x, y, size, size);
+            }
+            gameCtx.globalAlpha = 1;
+        }
+
+        function drawShip(x, y) {
+            gameCtx.save();
+            gameCtx.translate(x, y);
+
+            // Ship body
+            gameCtx.fillStyle = '#8b5cf6';
+            gameCtx.beginPath();
+            gameCtx.moveTo(15, 0);
+            gameCtx.lineTo(-15, -10);
+            gameCtx.lineTo(-10, 0);
+            gameCtx.lineTo(-15, 10);
+            gameCtx.closePath();
+            gameCtx.fill();
+
+            // Ship outline
+            gameCtx.strokeStyle = '#a78bfa';
+            gameCtx.lineWidth = 2;
+            gameCtx.stroke();
+
+            // Engine glow
+            gameCtx.fillStyle = '#fbbf24';
+            gameCtx.beginPath();
+            gameCtx.arc(-10, 0, 5, 0, Math.PI * 2);
+            gameCtx.fill();
+
+            gameCtx.restore();
+        }
+
+        function drawAsteroid(x, y, size, rotation) {
+            gameCtx.save();
+            gameCtx.translate(x, y);
+            gameCtx.rotate(rotation);
+
+            // Asteroid
+            gameCtx.fillStyle = '#6b7280';
+            gameCtx.strokeStyle = '#9ca3af';
+            gameCtx.lineWidth = 2;
+
+            gameCtx.beginPath();
+            const points = 8;
+            for (let i = 0; i < points; i++) {
+                const angle = (i / points) * Math.PI * 2;
+                const r = size / 2 * (0.8 + Math.sin(i * 3) * 0.2);
+                const px = Math.cos(angle) * r;
+                const py = Math.sin(angle) * r;
+                if (i === 0) gameCtx.moveTo(px, py);
+                else gameCtx.lineTo(px, py);
+            }
+            gameCtx.closePath();
+            gameCtx.fill();
+            gameCtx.stroke();
+
+            gameCtx.restore();
+        }
+
+        function drawStar(x, y, size, rotation) {
+            gameCtx.save();
+            gameCtx.translate(x, y);
+            gameCtx.rotate(rotation);
+
+            // Star
+            gameCtx.fillStyle = '#fbbf24';
+            gameCtx.strokeStyle = '#f59e0b';
+            gameCtx.lineWidth = 2;
+
+            gameCtx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                const r = size / 2;
+                const px = Math.cos(angle) * r;
+                const py = Math.sin(angle) * r;
+                gameCtx.lineTo(px, py);
+
+                const angle2 = ((i + 0.5) / 5) * Math.PI * 2 - Math.PI / 2;
+                const r2 = size / 4;
+                const px2 = Math.cos(angle2) * r2;
+                const py2 = Math.sin(angle2) * r2;
+                gameCtx.lineTo(px2, py2);
+            }
+            gameCtx.closePath();
+            gameCtx.fill();
+            gameCtx.stroke();
+
+            gameCtx.restore();
+        }
+
+        function drawRpmIndicator() {
+            const width = gameCanvas.width;
+            const height = gameCanvas.height;
+            const currentRpm = rpmHistory[rpmHistory.length - 1] || 0;
+
+            // Draw RPM bar on the left side
+            const barWidth = 20;
+            const barHeight = height * 0.6;
+            const barX = 30;
+            const barY = height * 0.2;
+
+            // Background
+            gameCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            gameCtx.fillRect(barX, barY, barWidth, barHeight);
+
+            // RPM fill
+            const fillHeight = (Math.min(currentRpm, 100) / 100) * barHeight;
+            const gradient = gameCtx.createLinearGradient(barX, barY + barHeight, barX, barY);
+            gradient.addColorStop(0, '#10b981');
+            gradient.addColorStop(0.5, '#fbbf24');
+            gradient.addColorStop(1, '#ef4444');
+            gameCtx.fillStyle = gradient;
+            gameCtx.fillRect(barX, barY + barHeight - fillHeight, barWidth, fillHeight);
+
+            // Border
+            gameCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            gameCtx.lineWidth = 2;
+            gameCtx.strokeRect(barX, barY, barWidth, barHeight);
+
+            // RPM text
+            gameCtx.fillStyle = '#ffffff';
+            gameCtx.font = 'bold 14px Inter';
+            gameCtx.textAlign = 'center';
+            gameCtx.fillText(Math.floor(currentRpm), barX + barWidth / 2, barY + barHeight + 20);
+            gameCtx.fillText('RPM', barX + barWidth / 2, barY + barHeight + 35);
+        }
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 4 + 2,
+                    color: Math.random() > 0.5 ? '#ef4444' : '#f97316',
+                    life: 1
+                });
+            }
+        }
+
+        function createStarParticles(x, y) {
+            for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1;
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 3 + 1,
+                    color: '#fbbf24',
+                    life: 1
+                });
+            }
+        }
+
+        // ========== END GAME LOGIC ==========
+
+        // Date/time update
+        function updateDateTime() {
+            const now = new Date();
+            const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+            const date = `${now.getDate()} ${mois[now.getMonth()]} ${now.getFullYear()}`;
+            const heures = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const secondes = String(now.getSeconds()).padStart(2, '0');
+            const heure = `${heures}:${minutes}:${secondes}`;
+
+            document.getElementById('datetimeDate').textContent = date;
+            document.getElementById('datetimeTime').textContent = heure;
+        }
+
+        // Initialize app
+        function initializeApp() {
+            // Prevent multiple initializations
+            if (appInitialized) {
+                console.log('App already initialized, skipping...');
+                return;
+            }
+            appInitialized = true;
+
+            console.log('Initializing app...');
+            updateTimerDisplay();
+            updateDisplay();
+            loadTargetRpm();
+            loadCustomProgram();
+
+            // Initialize default program (Plat mode)
+            programActive = true;
+            programs.none = Array(30).fill(currentPower);
+            renderHistogram();
+            updateUniversalControl();
+            document.getElementById('universalPowerControl').style.display = 'flex';
+            document.getElementById('histogramTitle').textContent = 'Mode Plat';
+
+            // Initialize RPM chart after DOM is fully ready and laid out
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    initRpmChart();
+                }, 200);
+            });
+
+            // Initial power setting
+            setPower(25);
+
+            // Start status updates
+            updateStatus();
+            setInterval(updateStatus, 500);
+
+            // Start time updates
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            console.log('App initialized successfully');
+        }
+
+        // Start app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (rpmChart && rpmChartCtx) {
+                const container = rpmChart.parentElement;
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                drawRpmChart();
+            }
+        });
+    </script>
+</body>
+
+</html>
