@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] - 2025-11-30
+
+### Improved
+- **Game Mode Ship Responsiveness** 🎮
+  - Increased ship movement responsiveness in Space Runner game mode
+  - Ship now reacts 3.5x faster to RPM changes (smoothing factor: 0.1 → 0.35)
+  - More reactive gameplay while maintaining smooth movement
+  - Better player control when varying pedaling speed
+
+### Technical
+- `static/index.html`: Updated `updateGameState()` function
+  - Modified ship position interpolation from `0.1` to `0.35` for faster response
+
 ## [2.4.0] - 2025-11-30
 
 ### Fixed
