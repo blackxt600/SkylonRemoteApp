@@ -14,10 +14,48 @@ Complete guide for setting up automatic startup and log management on Raspberry 
 
 ## Quick Start
 
+### Automatic Installation (RECOMMENDED)
+
 If you just want to get the service running quickly on Raspberry Pi:
 
 ```bash
-cd $HOME/Documents/SkylonRemoteApp
+cd ~/Documents/SkylonRemoteApp
+
+# Run the installation script
+./autostart/install-service.sh
+```
+
+The script automatically:
+- Detects your username and home directory
+- Stops and removes old services
+- Generates a service file configured for your user
+- Installs, enables, and starts the service
+
+Then configure log limits (RECOMMENDED):
+```bash
+sudo mkdir -p /etc/systemd/journald.conf.d/
+sudo cp autostart/journald-limit.conf /etc/systemd/journald.conf.d/skylon.conf
+sudo systemctl restart systemd-journald
+sudo journalctl --vacuum-size=50M
+```
+
+Check status:
+```bash
+sudo systemctl status skylon-remote.service
+```
+
+---
+
+### Manual Installation (if automatic installation fails)
+
+**IMPORTANT**: The `skylon-remote.service` template file uses `User=gilles` by default. You MUST change this to your username before installing manually.
+
+```bash
+cd ~/Documents/SkylonRemoteApp
+
+# Edit the service file to change the username
+nano autostart/skylon-remote.service
+# Change "User=gilles" to your username (e.g., "User=skylon")
 
 # Install the service
 sudo cp autostart/skylon-remote.service /etc/systemd/system/
@@ -36,6 +74,8 @@ Check status:
 ```bash
 sudo systemctl status skylon-remote.service
 ```
+
+**Note**: The service file uses `%h` which is a systemd variable that expands to the home directory of the user specified in the `User=` directive.
 
 ---
 

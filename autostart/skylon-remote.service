@@ -5,6 +5,9 @@ Wants=bluetooth.target
 
 [Service]
 Type=simple
+# IMPORTANT: Change 'gilles' to your username before manual installation
+# Or use the install-service.sh script which does this automatically
+# Note: %h is a systemd variable that expands to the home directory of the User
 User=gilles
 WorkingDirectory=%h/Documents/SkylonRemoteApp
 ExecStart=%h/.cargo/bin/cargo run --release

@@ -14,14 +14,42 @@ Install the new `skylon-remote.service` which runs directly without GUI terminal
 
 ## Migration Steps (Run on Raspberry Pi)
 
-### 1. Pull the latest changes
+### Method 1: Automatic Installation (RECOMMENDED)
 
 ```bash
-cd /home/skylon/Documents/SkylonRemoteApp
+# 1. Navigate to project directory
+cd ~/Documents/SkylonRemoteApp
+
+# 2. Pull latest changes
+git pull
+
+# 3. Run the installation script
+./autostart/install-service.sh
+```
+
+The script will automatically:
+- Detect your username and home directory
+- Stop and remove old services
+- Generate a service file configured for your user
+- Install, enable, and start the new service
+- Show the service status
+
+**That's it!** Skip to [step 4 (Verify)](#4-verify-it-works) below.
+
+---
+
+### Method 2: Manual Installation
+
+If you prefer to install manually or the automatic script fails:
+
+#### 1. Pull the latest changes
+
+```bash
+cd ~/Documents/SkylonRemoteApp
 git pull
 ```
 
-### 2. Stop and remove the old service
+#### 2. Stop and remove the old service
 
 ```bash
 # Stop the old service
@@ -37,10 +65,29 @@ sudo rm /etc/systemd/system/startup-command.service
 sudo systemctl daemon-reload
 ```
 
-### 3. Install the new service
+#### 3. Edit and install the new service
+
+**IMPORTANT**: The `skylon-remote.service` file uses `User=gilles` by default. You MUST change this to your username.
 
 ```bash
-# Copy the new service file
+# Edit the service file
+nano autostart/skylon-remote.service
+```
+
+Change this line:
+```ini
+User=gilles
+```
+
+To your username (e.g., for user `skylon`):
+```ini
+User=skylon
+```
+
+Save and exit (Ctrl+X, Y, Enter), then install:
+
+```bash
+# Copy the modified service file
 sudo cp autostart/skylon-remote.service /etc/systemd/system/
 
 # Reload systemd
@@ -52,6 +99,8 @@ sudo systemctl enable skylon-remote.service
 # Start the service now
 sudo systemctl start skylon-remote.service
 ```
+
+---
 
 ### 4. Verify it works
 
