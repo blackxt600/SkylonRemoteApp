@@ -1,13 +1,14 @@
 #!/bin/bash
-# Script pour ouvrir un terminal et lancer le serveur Rust au démarrage
+# Script to open a terminal and launch the Rust server at startup
+# Note: This script is optional - the systemd service runs without GUI terminal
 
-# Commande : se déplacer dans le dossier et lancer cargo run --release
-COMMAND="cd /home/skylon/Documents/SkylonRemoteApp && /home/skylon/.cargo/bin/cargo run --release"
+# Command: navigate to project directory and launch cargo run --release
+COMMAND="cd $HOME/Documents/SkylonRemoteApp && $HOME/.cargo/bin/cargo run --release"
 
-# Ouvre un terminal LXTerminal (terminal par défaut sur Raspberry Pi OS)
-# et exécute la commande
+# Open LXTerminal (default terminal on Raspberry Pi OS)
+# and execute the command
 lxterminal -e bash -c "$COMMAND; exec bash"
 
-# Alternatives pour d'autres terminaux :
+# Alternatives for other terminals:
 # xterm -hold -e "$COMMAND"
 # gnome-terminal -- bash -c "$COMMAND; exec bash"

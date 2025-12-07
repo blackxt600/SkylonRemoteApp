@@ -1,0 +1,27 @@
+[Unit]
+Description=SkylonRemoteApp - Rust HTTP server for Kettler elliptical trainer
+After=network.target bluetooth.target
+Wants=bluetooth.target
+
+[Service]
+Type=simple
+User=gilles
+WorkingDirectory=%h/Documents/SkylonRemoteApp
+ExecStart=%h/.cargo/bin/cargo run --release
+Restart=on-failure
+RestartSec=10
+
+# Log Management
+# By default, logs are sent to journald
+StandardOutput=journal
+StandardError=journal
+
+# Uncomment to reduce log verbosity (only warnings and errors)
+#SyslogLevel=warning
+
+# Uncomment to completely disable logs (NOT RECOMMENDED - makes debugging impossible)
+#StandardOutput=null
+#StandardError=null
+
+[Install]
+WantedBy=multi-user.target

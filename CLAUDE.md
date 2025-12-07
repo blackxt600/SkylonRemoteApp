@@ -202,11 +202,12 @@ The kdri library auto-detects device type and polls appropriate values (RPM, pow
 
 ## Deployment
 
-For systemd auto-start configuration, see:
-- `autostart/startup-command.service` - Systemd service file
-- `autostart/launch_terminal.sh` - Launch script
-- `autostart/README_installation.md` - Installation instructions
-- `autostart/GESTION_LOGS.md` - Log management for Raspberry Pi (important to prevent disk space issues)
+For systemd auto-start configuration and log management, see:
+- `autostart/AUTOSTART_SETUP.md` - Complete installation and configuration guide
+- `autostart/skylon-remote.service` - Systemd service file (uses %h for portable paths)
+- `autostart/journald-limit.conf` - Journald configuration to limit log size
+- `autostart/cleanup-logs.sh` - Manual/automated log cleanup script
+- `autostart/launch_terminal.sh` - Optional GUI terminal launch script
 
 For shutdown/reboot functionality, see `SYSTEM_SHUTDOWN_REBOOT.md` for detailed sudo configuration instructions to allow passwordless execution of `/sbin/shutdown` and `/sbin/reboot` for the user running the server.
 
@@ -217,7 +218,7 @@ The application outputs logs to stdout/stderr which are captured by systemd's jo
 **Recommended configuration:**
 - Use `autostart/journald-limit.conf` to limit journal size to 50 MB
 - Set up weekly log cleanup with `autostart/cleanup-logs.sh`
-- See `autostart/GESTION_LOGS.md` for complete setup instructions
+- See `autostart/AUTOSTART_SETUP.md` for complete setup instructions
 
 ## Versioning
 
