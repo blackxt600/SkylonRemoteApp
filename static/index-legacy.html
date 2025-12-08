@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrôle Vélo Elliptique</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 8px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            padding: 8px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header avec date et statut */
+        .header {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            padding: 8px;
+            background: #0f3460;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .datetime {
+            font-size: 0.9em;
+        }
+
+        .datetime-time {
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .datetime-date {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .connection-status {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+        }
+
+        /* Layout principal : 2 colonnes */
+        .main-layout {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Colonne gauche : programmes et histogramme */
+        .left-column {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Programmes en grille horizontale */
+        .programs-grid {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px;
+            background: #0f3460;
+            border-radius: 8px;
+        }
+
+        .program-btn {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1 1 calc(25% - 5px);
+            -ms-flex: 1 1 calc(25% - 5px);
+            flex: 1 1 calc(25% - 5px);
+            min-width: 80px;
+            padding: 10px 5px;
+            font-size: 0.75em;
+            font-weight: 600;
+            border-radius: 6px;
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            color: #ccc;
+            cursor: pointer;
+            text-align: center;
+            -webkit-transition: all 0.2s;
+            transition: all 0.2s;
+        }
+
+        .program-btn:active {
+            -webkit-transform: scale(0.95);
+            transform: scale(0.95);
+        }
+
+        .program-btn.active {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        /* Histogramme */
+        .histogram-section {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 8px;
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            min-height: 200px;
+        }
+
+        .histogram-title {
+            font-size: 0.8em;
+            color: #888;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .histogram-container {
+            height: calc(100% - 80px);
+            position: relative;
+        }
+
+        .histogram-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Contrôle de puissance */
+        .power-control {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .power-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            background: #6366f1;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .power-btn:active {
+            -webkit-transform: scale(0.9);
+            transform: scale(0.9);
+        }
+
+        .power-display {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .power-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .power-label {
+            font-size: 0.7em;
+            color: #888;
+        }
+
+        /* Colonne droite : panneau de contrôle */
+        .right-column {
+            width: 200px;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-box {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .power-display-main {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+            -webkit-flex-direction: column;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+        }
+
+        .power-value-main {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .timer-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .timer-label {
+            font-size: 0.7em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .playback-controls {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            gap: 5px;
+        }
+
+        .playback-btn {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            background: #6366f1;
+            color: white;
+            cursor: pointer;
+        }
+
+        .playback-btn:active {
+            -webkit-transform: scale(0.95);
+            transform: scale(0.95);
+        }
+
+        .playback-btn.running {
+            background: #ef4444;
+        }
+
+        /* Section RPM */
+        .rpm-section {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 8px;
+            height: 180px;
+        }
+
+        .rpm-header {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .rpm-title {
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .rpm-current {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .rpm-chart-container {
+            height: 120px;
+            position: relative;
+        }
+
+        .target-rpm-control {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .target-rpm-label {
+            font-size: 0.75em;
+            color: #888;
+        }
+
+        .target-rpm-btn {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: white;
+            min-width: 40px;
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .target-rpm-value {
+            color: #fbbf24;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* Boutons système */
+        .system-buttons {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            gap: 5px;
+        }
+
+        .system-btn {
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 0.7em;
+            cursor: pointer;
+        }
+
+        .shutdown-btn {
+            background: #dc2626;
+        }
+
+        .reboot-btn {
+            background: #ea580c;
+        }
+
+        .system-btn:active {
+            -webkit-transform: scale(0.95);
+            transform: scale(0.95);
+        }
+
+        /* Plein écran */
+        .fullscreen-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(15, 52, 96, 0.9);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        /* Responsive pour petits écrans */
+        @media (max-width: 900px) {
+            .main-layout {
+                -webkit-box-orient: vertical;
+                -webkit-box-direction: normal;
+                -webkit-flex-direction: column;
+                -ms-flex-direction: column;
+                flex-direction: column;
+            }
+
+            .right-column {
+                width: 100%;
+            }
+
+            .program-btn {
+                -webkit-flex: 1 1 calc(33.333% - 5px);
+                -ms-flex: 1 1 calc(33.333% - 5px);
+                flex: 1 1 calc(33.333% - 5px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Bouton plein écran -->
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="datetime">
+                <div class="datetime-time" id="datetimeTime">00:00:00</div>
+                <div class="datetime-date" id="datetimeDate">-</div>
+            </div>
+            <div class="connection-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Déconnecté</span>
+            </div>
+        </div>
+
+        <!-- Layout principal -->
+        <div class="main-layout">
+            <!-- Colonne gauche -->
+            <div class="left-column">
+                <!-- Programmes -->
+                <div class="programs-grid">
+                    <button class="program-btn active" onclick="selectProgram('none')">Plat</button>
+                    <button class="program-btn" onclick="selectProgram('plat')">Escalier</button>
+                    <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
+                    <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
+                    <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
+                    <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
+                    <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
+                    <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                </div>
+
+                <!-- Histogramme -->
+                <div class="histogram-section">
+                    <div class="histogram-title" id="histogramTitle">Mode Plat</div>
+                    <div class="histogram-container">
+                        <canvas id="histogramCanvas" class="histogram-canvas"></canvas>
+                    </div>
+
+                    <!-- Contrôle de puissance -->
+                    <div class="power-control" id="powerControl">
+                        <button class="power-btn" onclick="decreasePowerControl()">−</button>
+                        <div class="power-display">
+                            <div class="power-label" id="powerControlLabel">Puissance</div>
+                            <div class="power-value" id="powerControlValue">25</div>
+                            <div class="power-label">W</div>
+                        </div>
+                        <button class="power-btn" onclick="increasePowerControl()">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne droite -->
+            <div class="right-column">
+                <!-- Affichage puissance -->
+                <div class="control-box power-display-main">
+                    <div class="timer-label">Puissance</div>
+                    <div class="power-value-main" id="powerValue">--</div>
+                    <div class="timer-label">Watts</div>
+                </div>
+
+                <!-- Timer -->
+                <div class="control-box">
+                    <div class="timer-label">Temps</div>
+                    <div class="timer-value" id="timer">00:00:00</div>
+                </div>
+
+                <!-- Contrôles lecture -->
+                <div class="playback-controls">
+                    <button class="playback-btn" id="playBtn" onclick="toggleTimer()">▶</button>
+                    <button class="playback-btn" onclick="resetTimer()">↻</button>
+                </div>
+
+                <!-- Boutons système -->
+                <div class="system-buttons">
+                    <button class="system-btn shutdown-btn" onclick="confirmShutdown()">🔴 Éteindre</button>
+                    <button class="system-btn reboot-btn" onclick="confirmReboot()">🔄 Redémarrer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section RPM -->
+        <div class="rpm-section">
+            <div class="rpm-header">
+                <div class="rpm-title">RPM</div>
+                <div class="rpm-current" id="rpmCurrent">-- tr/min</div>
+            </div>
+
+            <div class="target-rpm-control">
+                <span class="target-rpm-label">Cible:</span>
+                <button onclick="decreaseTargetRpm()" class="target-rpm-btn">−</button>
+                <span id="targetRpmDisplay" class="target-rpm-value">60</span>
+                <button onclick="increaseTargetRpm()" class="target-rpm-btn">+</button>
+            </div>
+
+            <div class="rpm-chart-container">
+                <canvas id="rpmChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        var currentPower = 25;
+        var powerStep = 5;
+        var timerSeconds = 0;
+        var timerInterval = null;
+        var isTimerRunning = false;
+        var rpmAutoStarted = false;
+        var currentProgram = 'none';
+        var programActive = true;
+        var difficultyAdjustment = 0;
+
+        // RPM Chart
+        var rpmHistory = [];
+        var MAX_RPM_HISTORY = 60;
+        var rpmChart = null;
+        var rpmChartCtx = null;
+        var targetRpm = 60;
+
+        // Histogram Canvas
+        var histogramCanvas = null;
+        var histogramCtx = null;
+
+        // Programmes par défaut (30 minutes)
+        var defaultPrograms = {
+            'none': [],
+            'plat': [
+                25, 25, 25, 35, 35, 35, 35, 35, 35, 35,
+                50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+                35, 35, 35, 35, 35, 35, 25, 25, 25, 25
+            ],
+            'vallee': [
+                25, 25, 25, 70, 90, 110, 120, 130, 120, 110,
+                80, 70, 90, 110, 130, 140, 130, 110, 90, 100,
+                120, 110, 100, 90, 80, 70, 60, 25, 25, 25
+            ],
+            'collines': [
+                25, 25, 25, 50, 70, 90, 110, 130, 120, 100,
+                80, 60, 40, 30, 50, 70, 90, 110, 130, 120,
+                100, 80, 60, 55, 50, 45, 40, 25, 25, 25
+            ],
+            'montagne': [
+                25, 25, 25, 80, 120, 140, 160, 150, 130, 110,
+                90, 80, 100, 120, 140, 160, 180, 160, 140, 120,
+                100, 90, 80, 70, 60, 60, 60, 25, 25, 25
+            ],
+            'alpin': [
+                25, 25, 25, 50, 60, 70, 80, 90, 100, 110,
+                120, 130, 140, 150, 160, 160, 150, 130, 110, 90,
+                70, 60, 50, 45, 40, 35, 30, 25, 25, 25
+            ],
+            'intervalle': [
+                25, 25, 25, 80, 50, 80, 50, 90, 50, 110,
+                50, 110, 60, 125, 60, 125, 50, 110, 50, 90,
+                50, 100, 50, 90, 50, 70, 50, 25, 25, 25
+            ],
+            'pyramide': [
+                25, 25, 25, 40, 50, 60, 70, 80, 90, 100,
+                110, 115, 120, 120, 120, 115, 110, 100, 90, 80,
+                70, 60, 50, 40, 30, 25, 25, 25, 25, 25
+            ]
+        };
+
+        var programs = {};
+        for (var key in defaultPrograms) {
+            programs[key] = defaultPrograms[key].slice();
+        }
+
+        // Initialiser le programme "none"
+        programs.none = [];
+        for (var i = 0; i < 30; i++) {
+            programs.none.push(currentPower);
+        }
+
+        // Fonctions timer
+        function formatTime(seconds) {
+            var hours = Math.floor(seconds / 3600);
+            var minutes = Math.floor((seconds % 3600) / 60);
+            var secs = seconds % 60;
+
+            var h = hours < 10 ? '0' + hours : hours;
+            var m = minutes < 10 ? '0' + minutes : minutes;
+            var s = secs < 10 ? '0' + secs : secs;
+
+            return h + ':' + m + ':' + s;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = formatTime(timerSeconds);
+        }
+
+        function toggleTimer() {
+            var btn = document.getElementById('playBtn');
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isTimerRunning = false;
+                btn.textContent = '▶';
+                btn.classList.remove('running');
+            } else {
+                timerInterval = setInterval(function() {
+                    timerSeconds++;
+                    updateTimerDisplay();
+                    updateProgramProgress();
+
+                    if (programActive && timerSeconds >= 1800) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isTimerRunning = false;
+                        btn.textContent = '▶';
+                        btn.classList.remove('running');
+                    }
+                }, 1000);
+                isTimerRunning = true;
+                btn.textContent = '⏸';
+                btn.classList.add('running');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            isTimerRunning = false;
+            rpmAutoStarted = false;
+            updateTimerDisplay();
+            var btn = document.getElementById('playBtn');
+            btn.textContent = '▶';
+            btn.classList.remove('running');
+
+            if (programActive) {
+                difficultyAdjustment = 0;
+                renderHistogram();
+            }
+
+            updateProgramProgress();
+        }
+
+        // Contrôle de puissance
+        function setPower(watts) {
+            watts = Math.max(25, Math.min(400, watts));
+
+            fetch('/power/' + watts, { method: 'POST' })
+                .then(function(response) {
+                    if (response.ok) {
+                        currentPower = watts;
+                        updateDisplay();
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur puissance:', error);
+                });
+        }
+
+        function updateDisplay() {
+            document.getElementById('powerValue').textContent = currentPower;
+        }
+
+        function increasePowerControl() {
+            if (currentProgram === 'none') {
+                var newPower = Math.min(currentPower + powerStep, 400);
+                setPower(newPower);
+                programs.none = [];
+                for (var i = 0; i < 30; i++) {
+                    programs.none.push(newPower);
+                }
+                renderHistogram();
+            } else {
+                difficultyAdjustment = Math.min(difficultyAdjustment + 5, 100);
+                updatePowerControlDisplay();
+                renderHistogram();
+
+                if (programActive && programs[currentProgram]) {
+                    var currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        var basePower = programs[currentProgram][currentMinute];
+                        var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        setPower(adjustedPower);
+                    }
+                }
+            }
+        }
+
+        function decreasePowerControl() {
+            if (currentProgram === 'none') {
+                var newPower = Math.max(currentPower - powerStep, 25);
+                setPower(newPower);
+                programs.none = [];
+                for (var i = 0; i < 30; i++) {
+                    programs.none.push(newPower);
+                }
+                renderHistogram();
+            } else {
+                difficultyAdjustment = Math.max(difficultyAdjustment - 5, -100);
+                updatePowerControlDisplay();
+                renderHistogram();
+
+                if (programActive && programs[currentProgram]) {
+                    var currentMinute = Math.floor(timerSeconds / 60);
+                    if (currentMinute < 30) {
+                        var basePower = programs[currentProgram][currentMinute];
+                        var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        setPower(adjustedPower);
+                    }
+                }
+            }
+        }
+
+        function updatePowerControlDisplay() {
+            var label = document.getElementById('powerControlLabel');
+            var value = document.getElementById('powerControlValue');
+
+            if (currentProgram === 'none') {
+                label.textContent = 'Puissance';
+                value.textContent = currentPower;
+                value.style.color = '#00d4ff';
+            } else {
+                label.textContent = 'Difficulté';
+                if (difficultyAdjustment > 0) {
+                    value.textContent = '+' + difficultyAdjustment;
+                    value.style.color = '#ef4444';
+                } else if (difficultyAdjustment < 0) {
+                    value.textContent = difficultyAdjustment;
+                    value.style.color = '#10b981';
+                } else {
+                    value.textContent = 'Normal';
+                    value.style.color = '#00d4ff';
+                }
+            }
+        }
+
+        // Sélection de programme
+        function selectProgram(program) {
+            currentProgram = program;
+            programActive = true;
+
+            // Mettre à jour les boutons
+            var buttons = document.querySelectorAll('.program-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            event.target.classList.add('active');
+
+            var histogramTitle = document.getElementById('histogramTitle');
+            var programNames = {
+                'none': 'Mode Plat',
+                'plat': 'Escalier',
+                'vallee': 'Vallée',
+                'collines': 'Collines',
+                'montagne': 'Montagne',
+                'alpin': 'Col Alpin',
+                'intervalle': 'Intervalle',
+                'pyramide': 'Pyramide'
+            };
+
+            histogramTitle.textContent = programNames[program] || program;
+
+            if (program === 'none') {
+                programs.none = [];
+                for (var i = 0; i < 30; i++) {
+                    programs.none.push(currentPower);
+                }
+            }
+
+            difficultyAdjustment = 0;
+            updatePowerControlDisplay();
+            renderHistogram();
+            resetTimer();
+
+            if (programs[currentProgram]) {
+                var initialPower = Math.max(25, programs[currentProgram][0] + difficultyAdjustment);
+                setPower(initialPower);
+            }
+        }
+
+        // Initialiser le canvas de l'histogramme
+        function initHistogramCanvas() {
+            histogramCanvas = document.getElementById('histogramCanvas');
+            if (!histogramCanvas) {
+                setTimeout(initHistogramCanvas, 200);
+                return;
+            }
+
+            var container = histogramCanvas.parentElement;
+            if (!container || container.clientWidth === 0) {
+                setTimeout(initHistogramCanvas, 200);
+                return;
+            }
+
+            histogramCtx = histogramCanvas.getContext('2d');
+            histogramCanvas.width = container.clientWidth;
+            histogramCanvas.height = container.clientHeight;
+
+            renderHistogram();
+        }
+
+        // Rendu histogramme sur canvas
+        function renderHistogram() {
+            if (!histogramCtx || !histogramCanvas) {
+                initHistogramCanvas();
+                return;
+            }
+
+            if (!programActive || !programs[currentProgram]) return;
+
+            var width = histogramCanvas.width;
+            var height = histogramCanvas.height;
+            var padding = 40;
+            var chartWidth = width - padding * 2;
+            var chartHeight = height - padding * 2;
+
+            // Effacer le canvas
+            histogramCtx.clearRect(0, 0, width, height);
+
+            var powerValues = programs[currentProgram];
+            var maxPower = 25;
+
+            // Trouver la puissance maximale
+            for (var i = 0; i < powerValues.length; i++) {
+                var adjustedPower = Math.max(25, powerValues[i] + difficultyAdjustment);
+                if (adjustedPower > maxPower) {
+                    maxPower = adjustedPower;
+                }
+            }
+
+            var roundedMax = Math.ceil(maxPower / 10) * 10;
+
+            // Dessiner la grille et l'échelle
+            histogramCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            histogramCtx.lineWidth = 1;
+            histogramCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            histogramCtx.font = '11px sans-serif';
+            histogramCtx.textAlign = 'right';
+
+            for (var i = 0; i <= 4; i++) {
+                var y = padding + (chartHeight * i) / 4;
+                histogramCtx.beginPath();
+                histogramCtx.moveTo(padding, y);
+                histogramCtx.lineTo(width - padding / 2, y);
+                histogramCtx.stroke();
+
+                var value = roundedMax - (roundedMax * i) / 4;
+                histogramCtx.fillText(Math.round(value) + 'W', padding - 5, y + 4);
+            }
+
+            // Ligne de base
+            histogramCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            histogramCtx.lineWidth = 2;
+            histogramCtx.beginPath();
+            histogramCtx.moveTo(padding, height - padding);
+            histogramCtx.lineTo(width - padding / 2, height - padding);
+            histogramCtx.stroke();
+
+            // Dessiner les barres
+            var currentMinute = Math.floor(timerSeconds / 60);
+            var barCount = powerValues.length;
+            var barWidth = chartWidth / barCount;
+            var barSpacing = Math.max(1, barWidth * 0.1);
+            var actualBarWidth = barWidth - barSpacing;
+
+            for (var i = 0; i < powerValues.length; i++) {
+                var power = powerValues[i];
+                var adjustedPower = Math.max(25, power + difficultyAdjustment);
+                var barHeight = (adjustedPower / roundedMax) * chartHeight;
+
+                var x = padding + i * barWidth + barSpacing / 2;
+                var y = height - padding - barHeight;
+
+                // Couleur selon l'état
+                if (i < currentMinute) {
+                    histogramCtx.fillStyle = '#10b981'; // Vert - complété
+                } else if (i === currentMinute) {
+                    histogramCtx.fillStyle = '#fbbf24'; // Jaune - actuel
+                } else {
+                    histogramCtx.fillStyle = '#333'; // Gris - en attente
+                }
+
+                // Dessiner la barre avec coins arrondis
+                histogramCtx.beginPath();
+                histogramCtx.moveTo(x + 2, y + barHeight);
+                histogramCtx.lineTo(x + 2, y + 2);
+                histogramCtx.arcTo(x, y, x + actualBarWidth, y, 2);
+                histogramCtx.lineTo(x + actualBarWidth - 2, y);
+                histogramCtx.arcTo(x + actualBarWidth, y, x + actualBarWidth, y + 2, 2);
+                histogramCtx.lineTo(x + actualBarWidth, y + barHeight);
+                histogramCtx.closePath();
+                histogramCtx.fill();
+            }
+
+            // Dessiner la minute courante (si en cours)
+            if (currentMinute >= 0 && currentMinute < barCount) {
+                histogramCtx.strokeStyle = '#fbbf24';
+                histogramCtx.lineWidth = 2;
+                var x = padding + currentMinute * barWidth;
+                histogramCtx.strokeRect(x, padding, barWidth, chartHeight);
+            }
+        }
+
+        function updateProgramProgress() {
+            if (!programActive) return;
+
+            // Redessiner l'histogramme avec la minute courante
+            renderHistogram();
+
+            var currentMinute = Math.floor(timerSeconds / 60);
+
+            if (programs[currentProgram] && currentMinute < 30) {
+                var basePower = programs[currentProgram][currentMinute];
+                var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+
+                if (isTimerRunning && currentMinute >= 0) {
+                    setPower(adjustedPower);
+                }
+            }
+        }
+
+        // RPM Chart
+        function initRpmChart() {
+            rpmChart = document.getElementById('rpmChart');
+            if (!rpmChart) return;
+
+            var container = rpmChart.parentElement;
+            if (!container || container.clientWidth === 0) {
+                setTimeout(initRpmChart, 200);
+                return;
+            }
+
+            rpmChartCtx = rpmChart.getContext('2d');
+            rpmChart.width = container.clientWidth;
+            rpmChart.height = container.clientHeight;
+
+            for (var i = 0; i < MAX_RPM_HISTORY; i++) {
+                rpmHistory.push(0);
+            }
+
+            drawRpmChart();
+        }
+
+        function drawRpmChart() {
+            if (!rpmChartCtx || !rpmChart) return;
+
+            var width = rpmChart.width;
+            var height = rpmChart.height;
+            var padding = 30;
+            var chartWidth = width - padding * 2;
+            var chartHeight = height - padding * 2;
+
+            rpmChartCtx.clearRect(0, 0, width, height);
+
+            var maxRpm = targetRpm;
+            for (var i = 0; i < rpmHistory.length; i++) {
+                if (rpmHistory[i] > maxRpm) {
+                    maxRpm = rpmHistory[i];
+                }
+            }
+            if (maxRpm < 100) maxRpm = 100;
+
+            var roundedMax = Math.ceil(maxRpm / 20) * 20;
+
+            // Grille
+            rpmChartCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            rpmChartCtx.lineWidth = 1;
+
+            for (var i = 0; i <= 4; i++) {
+                var y = padding + (chartHeight * i) / 4;
+                rpmChartCtx.beginPath();
+                rpmChartCtx.moveTo(padding, y);
+                rpmChartCtx.lineTo(width - padding, y);
+                rpmChartCtx.stroke();
+
+                var value = roundedMax - (roundedMax * i) / 4;
+                rpmChartCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                rpmChartCtx.font = '10px sans-serif';
+                rpmChartCtx.textAlign = 'right';
+                rpmChartCtx.fillText(Math.round(value), padding - 5, y + 3);
+            }
+
+            // Ligne cible
+            var targetY = height - padding - (targetRpm / roundedMax) * chartHeight;
+            rpmChartCtx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            rpmChartCtx.lineWidth = 2;
+            rpmChartCtx.setLineDash([5, 5]);
+            rpmChartCtx.beginPath();
+            rpmChartCtx.moveTo(padding, targetY);
+            rpmChartCtx.lineTo(width - padding, targetY);
+            rpmChartCtx.stroke();
+            rpmChartCtx.setLineDash([]);
+
+            // Courbe RPM
+            if (rpmHistory.length > 0) {
+                var pointSpacing = chartWidth / (MAX_RPM_HISTORY - 1);
+
+                rpmChartCtx.strokeStyle = '#00d4ff';
+                rpmChartCtx.lineWidth = 2;
+                rpmChartCtx.beginPath();
+
+                for (var i = 0; i < rpmHistory.length; i++) {
+                    var x = padding + i * pointSpacing;
+                    var y = height - padding - (rpmHistory[i] / roundedMax) * chartHeight;
+
+                    if (i === 0) {
+                        rpmChartCtx.moveTo(x, y);
+                    } else {
+                        rpmChartCtx.lineTo(x, y);
+                    }
+                }
+
+                rpmChartCtx.stroke();
+            }
+        }
+
+        function addRpmToHistory(rpm) {
+            rpmHistory.push(rpm);
+            if (rpmHistory.length > MAX_RPM_HISTORY) {
+                rpmHistory.shift();
+            }
+            drawRpmChart();
+        }
+
+        // Target RPM
+        function loadTargetRpm() {
+            var saved = localStorage.getItem('targetRpm');
+            if (saved) {
+                targetRpm = parseInt(saved);
+                document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            }
+        }
+
+        function saveTargetRpm() {
+            localStorage.setItem('targetRpm', targetRpm);
+        }
+
+        function increaseTargetRpm() {
+            targetRpm += 5;
+            if (targetRpm > 200) targetRpm = 200;
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        function decreaseTargetRpm() {
+            targetRpm -= 5;
+            if (targetRpm < 20) targetRpm = 20;
+            document.getElementById('targetRpmDisplay').textContent = targetRpm;
+            saveTargetRpm();
+            drawRpmChart();
+        }
+
+        // Mise à jour statut
+        function updateStatus() {
+            fetch('/status')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var statusDot = document.getElementById('statusDot');
+                    var statusText = document.getElementById('statusText');
+
+                    if (data.connected) {
+                        statusDot.classList.add('connected');
+                        statusText.textContent = 'Connecté';
+                    } else {
+                        statusDot.classList.remove('connected');
+                        statusText.textContent = 'Déconnecté';
+                    }
+
+                    document.getElementById('rpmCurrent').textContent = data.rpm + ' tr/min';
+
+                    if (Math.abs(data.power - currentPower) > 5) {
+                        currentPower = data.power;
+                        updateDisplay();
+                    }
+
+                    addRpmToHistory(data.rpm);
+
+                    // Auto-start/pause timer
+                    if (data.rpm > 0 && !isTimerRunning) {
+                        toggleTimer();
+                        rpmAutoStarted = true;
+                    }
+
+                    if (data.rpm === 0 && rpmAutoStarted && isTimerRunning) {
+                        toggleTimer();
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Erreur statut:', error);
+                });
+        }
+
+        // Système
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        function confirmShutdown() {
+            if (confirm('⚠️ Voulez-vous vraiment ÉTEINDRE le Raspberry Pi ?')) {
+                fetch('/system/shutdown', { method: 'POST' })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) { alert('🔴 ' + data.message); })
+                    .catch(function(error) {
+                        console.error('Erreur arrêt:', error);
+                        alert('❌ Erreur lors de l\'arrêt');
+                    });
+            }
+        }
+
+        function confirmReboot() {
+            if (confirm('⚠️ Voulez-vous vraiment REDÉMARRER le Raspberry Pi ?')) {
+                fetch('/system/reboot', { method: 'POST' })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) { alert('🔄 ' + data.message); })
+                    .catch(function(error) {
+                        console.error('Erreur redémarrage:', error);
+                        alert('❌ Erreur lors du redémarrage');
+                    });
+            }
+        }
+
+        // Date/heure
+        function updateDateTime() {
+            var now = new Date();
+            var mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+            var date = now.getDate() + ' ' + mois[now.getMonth()] + ' ' + now.getFullYear();
+            var heures = now.getHours();
+            var minutes = now.getMinutes();
+            var secondes = now.getSeconds();
+
+            if (heures < 10) heures = '0' + heures;
+            if (minutes < 10) minutes = '0' + minutes;
+            if (secondes < 10) secondes = '0' + secondes;
+
+            var heure = heures + ':' + minutes + ':' + secondes;
+
+            document.getElementById('datetimeDate').textContent = date;
+            document.getElementById('datetimeTime').textContent = heure;
+        }
+
+        // Initialisation
+        function initializeApp() {
+            updateTimerDisplay();
+            updateDisplay();
+            loadTargetRpm();
+
+            programActive = true;
+            programs.none = [];
+            for (var i = 0; i < 30; i++) {
+                programs.none.push(currentPower);
+            }
+            updatePowerControlDisplay();
+
+            setTimeout(function() {
+                initHistogramCanvas();
+                initRpmChart();
+            }, 200);
+
+            updateStatus();
+            setPower(25);
+
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        }
+
+        // Démarrage
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        setInterval(updateStatus, 500);
+
+        window.addEventListener('resize', function() {
+            // Redimensionner le graphique RPM
+            if (rpmChart && rpmChartCtx) {
+                var container = rpmChart.parentElement;
+                rpmChart.width = container.clientWidth;
+                rpmChart.height = container.clientHeight;
+                drawRpmChart();
+            }
+
+            // Redimensionner l'histogramme
+            if (histogramCanvas && histogramCtx) {
+                var container = histogramCanvas.parentElement;
+                histogramCanvas.width = container.clientWidth;
+                histogramCanvas.height = container.clientHeight;
+                renderHistogram();
+            }
+        });
+    </script>
+</body>
+
+</html>

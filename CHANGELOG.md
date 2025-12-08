@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.0] - 2025-12-08
+
+### Added
+- **Legacy Version for Old Browsers** 📱
+  - `static/index-legacy.html` - Simplified version compatible with old browsers
+  - **Target devices**: iPad with Chrome 63, Safari iOS 10+, 10-inch screens
+  - **Canvas-based histogram** instead of Flexbox for better compatibility
+  - **ES5 JavaScript only**:
+    - `var` instead of `const/let`
+    - Traditional functions instead of arrow functions
+    - `.then()/.catch()` instead of `async/await`
+    - Classic `for` loops, no spread operator
+  - **Simplified CSS**:
+    - Flexbox only (no CSS Grid)
+    - No backdrop-filter (unsupported in Chrome 63)
+    - Vendor prefixes (-webkit-) for maximum compatibility
+    - Simplified gradients and transitions
+  - **Compact 2-column layout** optimized for smaller screens
+  - **Programs in horizontal grid** (4 per row)
+  - Reduced margins, padding, fonts for 10-inch screens
+- **Legacy Documentation**
+  - `static/README_LEGACY.md` - Complete guide for legacy version
+  - Browser compatibility information
+  - Recommendations for old iPad usage
+  - Performance optimizations explained
+
+### Changed
+- **8 training programs retained** (Plat, Escalier, Vallée, Collines, Montagne, Col Alpin, Intervalle, Pyramide)
+- **Histogram rendering** on HTML5 Canvas for reliability
+  - Color-coded bars (green=completed, yellow=current, gray=pending)
+  - Integrated grid and watt scale
+  - Rounded corners on bars
+  - Auto-resize on window change
+
+### Removed (Legacy Version Only)
+- **Game Mode (Space Runner)** - too resource-intensive
+- **Custom Program "Sur mesure"** - complex editor interface
+- **Advanced visual effects** (glassmorphism, backdrop-filter, gradient animations)
+
+### Technical
+- `static/index-legacy.html`: Canvas-based histogram with `renderHistogram()` function
+- `static/README_LEGACY.md`: Complete documentation for legacy version
+- Legacy version is **~40% lighter** than standard version
+- Better performance on old devices (Chrome 63+, 2017)
+
 ## [2.3.1] - 2025-11-29
 
 ### Changed
