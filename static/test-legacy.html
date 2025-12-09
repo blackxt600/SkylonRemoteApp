@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Legacy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .status { padding: 10px; margin: 10px 0; border: 1px solid #333; }
+        .error { background: #ff0000; }
+        .success { background: #00ff00; color: black; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Test de diagnostic Legacy</h1>
+
+    <div class="status" id="status">Initialisation...</div>
+
+    <div>
+        <h2>Contrôles</h2>
+        <button onclick="testStatus()">Test /status</button>
+        <button onclick="testPower()">Test /power</button>
+        <button onclick="testDOM()">Test DOM</button>
+    </div>
+
+    <div id="results"></div>
+
+    <h2>Éléments de test</h2>
+    <div id="powerValue">--</div>
+    <div id="powerControlLabel">Label</div>
+    <div id="powerControlValue">25</div>
+
+    <script>
+        var results = [];
+
+        function log(msg, isError) {
+            console.log(msg);
+            results.push({msg: msg, error: isError});
+            updateResults();
+        }
+
+        function updateResults() {
+            var html = '<h3>Journal:</h3>';
+            for (var i = 0; i < results.length; i++) {
+                var cls = results[i].error ? 'error' : 'success';
+                html += '<div class="status ' + cls + '">' + results[i].msg + '</div>';
+            }
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function testStatus() {
+            log('Tentative de récupération du statut...', false);
+            fetch('/status')
+                .then(function(response) {
+                    log('Response status: ' + response.status, false);
+                    return response.json();
+                })
+                .then(function(data) {
+                    log('Données reçues: ' + JSON.stringify(data), false);
+                })
+                .catch(function(error) {
+                    log('ERREUR: ' + error.message, true);
+                });
+        }
+
+        function testPower() {
+            log('Tentative de changement de puissance...', false);
+            fetch('/power/50', { method: 'POST' })
+                .then(function(response) {
+                    log('Power response: ' + response.status, !response.ok);
+                })
+                .catch(function(error) {
+                    log('ERREUR power: ' + error.message, true);
+                });
+        }
+
+        function testDOM() {
+            log('Test des éléments DOM...', false);
+            var elements = ['powerValue', 'powerControlLabel', 'powerControlValue'];
+            for (var i = 0; i < elements.length; i++) {
+                var el = document.getElementById(elements[i]);
+                if (el) {
+                    log('✓ Element ' + elements[i] + ' trouvé', false);
+                } else {
+                    log('✗ Element ' + elements[i] + ' NOT FOUND', true);
+                }
+            }
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            log('Page chargée, début des tests...', false);
+            testDOM();
+
+            setTimeout(function() {
+                testStatus();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

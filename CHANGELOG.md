@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] - 2025-12-09
+
+### Fixed
+- **Legacy version fully functional on old iPad** 🎉
+  - Added **Promise polyfill** for iOS < 8 compatibility
+  - Added **fetch polyfill** using XMLHttpRequest for iOS < 10.3
+  - Fixed `selectProgram()` function using undefined `event.target` variable
+  - Added `this` parameter to all program button onclick handlers
+  - Fixed **power display flickering**: 3-second cooldown after manual changes
+  - Added `lastPowerChangeTime` timestamp to prevent server overwriting manual changes
+  - Added **global error handler** with alert for debugging on iPad
+  - Added extensive **console logging** for initialization tracking
+  - Fixed DOM element existence checks in `updateDisplay()` and `updatePowerControlDisplay()`
+
+### Added
+- **Diagnostic page** `static/test-legacy.html` for troubleshooting old browsers
+  - Tests fetch API availability
+  - Tests DOM element presence
+  - Displays results directly on screen
+  - Useful for devices without developer console access
+
+### Technical
+- Power display stability: server updates blocked for 3s after user interaction
+- Polyfills loaded conditionally (only if needed)
+- Compatible with iOS 8+ and very old Safari versions
+- All JavaScript is ES5-compliant (no modern syntax)
+
 ## [2.4.0] - 2025-12-08
 
 ### Added

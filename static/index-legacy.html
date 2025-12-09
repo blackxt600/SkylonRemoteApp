@@ -512,14 +512,14 @@
             <div class="left-column">
                 <!-- Programmes -->
                 <div class="programs-grid">
-                    <button class="program-btn active" onclick="selectProgram('none')">Plat</button>
-                    <button class="program-btn" onclick="selectProgram('plat')">Escalier</button>
-                    <button class="program-btn" onclick="selectProgram('vallee')">Vallée</button>
-                    <button class="program-btn" onclick="selectProgram('collines')">Collines</button>
-                    <button class="program-btn" onclick="selectProgram('montagne')">Montagne</button>
-                    <button class="program-btn" onclick="selectProgram('alpin')">Col Alpin</button>
-                    <button class="program-btn" onclick="selectProgram('intervalle')">Intervalle</button>
-                    <button class="program-btn" onclick="selectProgram('pyramide')">Pyramide</button>
+                    <button class="program-btn active" onclick="selectProgram('none', this)">Plat</button>
+                    <button class="program-btn" onclick="selectProgram('plat', this)">Escalier</button>
+                    <button class="program-btn" onclick="selectProgram('vallee', this)">Vallée</button>
+                    <button class="program-btn" onclick="selectProgram('collines', this)">Collines</button>
+                    <button class="program-btn" onclick="selectProgram('montagne', this)">Montagne</button>
+                    <button class="program-btn" onclick="selectProgram('alpin', this)">Col Alpin</button>
+                    <button class="program-btn" onclick="selectProgram('intervalle', this)">Intervalle</button>
+                    <button class="program-btn" onclick="selectProgram('pyramide', this)">Pyramide</button>
                 </div>
 
                 <!-- Histogramme -->
@@ -592,6 +592,107 @@
     </div>
 
     <script>
+        // Global error handler for debugging
+        window.onerror = function(msg, url, line, col, error) {
+            var errorMsg = 'ERROR: ' + msg + ' at line ' + line;
+            console.error(errorMsg);
+            alert(errorMsg);
+            return false;
+        };
+
+        // Debug: log browser info
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Promise support:', typeof Promise !== 'undefined');
+        console.log('Fetch support:', typeof fetch !== 'undefined');
+
+        // Polyfill Promise minimal pour très vieux navigateurs
+        if (typeof Promise === 'undefined') {
+            console.log('Loading Promise polyfill...');
+            window.Promise = function(executor) {
+                var callbacks = [];
+                var errorCallbacks = [];
+                var resolved = false;
+                var rejected = false;
+                var value;
+
+                function resolve(val) {
+                    if (resolved || rejected) return;
+                    resolved = true;
+                    value = val;
+                    for (var i = 0; i < callbacks.length; i++) {
+                        callbacks[i](value);
+                    }
+                }
+
+                function reject(err) {
+                    if (resolved || rejected) return;
+                    rejected = true;
+                    value = err;
+                    for (var i = 0; i < errorCallbacks.length; i++) {
+                        errorCallbacks[i](value);
+                    }
+                }
+
+                this.then = function(onSuccess, onError) {
+                    if (resolved) {
+                        onSuccess && onSuccess(value);
+                    } else if (rejected) {
+                        onError && onError(value);
+                    } else {
+                        onSuccess && callbacks.push(onSuccess);
+                        onError && errorCallbacks.push(onError);
+                    }
+                    return this;
+                };
+
+                this.catch = function(onError) {
+                    return this.then(null, onError);
+                };
+
+                Promise.resolve = function(val) {
+                    return new Promise(function(resolve) {
+                        resolve(val);
+                    });
+                };
+
+                try {
+                    executor(resolve, reject);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+        }
+
+        // Polyfill fetch pour compatibilité vieux navigateurs
+        if (!window.fetch) {
+            console.log('Loading fetch polyfill...');
+            window.fetch = function(url, options) {
+                options = options || {};
+                return new Promise(function(resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open(options.method || 'GET', url, true);
+
+                    xhr.onload = function() {
+                        var response = {
+                            ok: xhr.status >= 200 && xhr.status < 300,
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            json: function() {
+                                return Promise.resolve(JSON.parse(xhr.responseText));
+                            }
+                        };
+                        resolve(response);
+                    };
+
+                    xhr.onerror = function() {
+                        reject(new Error('Network error'));
+                    };
+
+                    xhr.send(options.body || null);
+                });
+            };
+        }
+
         // Variables globales
         var currentPower = 25;
         var powerStep = 5;
@@ -602,6 +703,7 @@
         var currentProgram = 'none';
         var programActive = true;
         var difficultyAdjustment = 0;
+        var lastPowerChangeTime = 0; // Timestamp du dernier changement manuel de puissance
 
         // RPM Chart
         var rpmHistory = [];
@@ -735,9 +837,8 @@
 
             fetch('/power/' + watts, { method: 'POST' })
                 .then(function(response) {
-                    if (response.ok) {
-                        currentPower = watts;
-                        updateDisplay();
+                    if (!response.ok) {
+                        console.error('Erreur lors du réglage de la puissance: statut ' + response.status);
                     }
                 })
                 .catch(function(error) {
@@ -746,12 +847,22 @@
         }
 
         function updateDisplay() {
-            document.getElementById('powerValue').textContent = currentPower;
+            var powerValueEl = document.getElementById('powerValue');
+            if (powerValueEl) {
+                powerValueEl.textContent = currentPower;
+            }
         }
 
         function increasePowerControl() {
+            // Mark that we just made a manual power change
+            lastPowerChangeTime = Date.now();
+
             if (currentProgram === 'none') {
                 var newPower = Math.min(currentPower + powerStep, 400);
+                // Update display immediately before sending to server
+                currentPower = newPower;
+                updateDisplay();
+                updatePowerControlDisplay();
                 setPower(newPower);
                 programs.none = [];
                 for (var i = 0; i < 30; i++) {
@@ -768,6 +879,9 @@
                     if (currentMinute < 30) {
                         var basePower = programs[currentProgram][currentMinute];
                         var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        // Update display immediately before sending to server
+                        currentPower = adjustedPower;
+                        updateDisplay();
                         setPower(adjustedPower);
                     }
                 }
@@ -775,8 +889,15 @@
         }
 
         function decreasePowerControl() {
+            // Mark that we just made a manual power change
+            lastPowerChangeTime = Date.now();
+
             if (currentProgram === 'none') {
                 var newPower = Math.max(currentPower - powerStep, 25);
+                // Update display immediately before sending to server
+                currentPower = newPower;
+                updateDisplay();
+                updatePowerControlDisplay();
                 setPower(newPower);
                 programs.none = [];
                 for (var i = 0; i < 30; i++) {
@@ -793,6 +914,9 @@
                     if (currentMinute < 30) {
                         var basePower = programs[currentProgram][currentMinute];
                         var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
+                        // Update display immediately before sending to server
+                        currentPower = adjustedPower;
+                        updateDisplay();
                         setPower(adjustedPower);
                     }
                 }
@@ -802,6 +926,11 @@
         function updatePowerControlDisplay() {
             var label = document.getElementById('powerControlLabel');
             var value = document.getElementById('powerControlValue');
+
+            // Check if elements exist before updating
+            if (!label || !value) {
+                return;
+            }
 
             if (currentProgram === 'none') {
                 label.textContent = 'Puissance';
@@ -823,7 +952,7 @@
         }
 
         // Sélection de programme
-        function selectProgram(program) {
+        function selectProgram(program, clickedButton) {
             currentProgram = program;
             programActive = true;
 
@@ -832,7 +961,9 @@
             for (var i = 0; i < buttons.length; i++) {
                 buttons[i].classList.remove('active');
             }
-            event.target.classList.add('active');
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
 
             var histogramTitle = document.getElementById('histogramTitle');
             var programNames = {
@@ -862,6 +993,11 @@
 
             if (programs[currentProgram]) {
                 var initialPower = Math.max(25, programs[currentProgram][0] + difficultyAdjustment);
+                // Mark that we're making a programmatic power change
+                lastPowerChangeTime = Date.now();
+                // Update display immediately before sending to server
+                currentPower = initialPower;
+                updateDisplay();
                 setPower(initialPower);
             }
         }
@@ -1002,6 +1138,11 @@
                 var adjustedPower = Math.max(25, Math.min(400, basePower + difficultyAdjustment));
 
                 if (isTimerRunning && currentMinute >= 0) {
+                    // Mark that we're making a programmatic power change
+                    lastPowerChangeTime = Date.now();
+                    // Update display immediately before sending to server
+                    currentPower = adjustedPower;
+                    updateDisplay();
                     setPower(adjustedPower);
                 }
             }
@@ -1159,7 +1300,10 @@
 
                     document.getElementById('rpmCurrent').textContent = data.rpm + ' tr/min';
 
-                    if (Math.abs(data.power - currentPower) > 5) {
+                    // Only update power display if no manual change was made in the last 3 seconds
+                    // This prevents flickering when user adjusts power manually
+                    var timeSinceLastChange = Date.now() - lastPowerChangeTime;
+                    if (data.power !== undefined && data.power !== null && timeSinceLastChange > 3000) {
                         currentPower = data.power;
                         updateDisplay();
                     }
@@ -1245,6 +1389,9 @@
 
         // Initialisation
         function initializeApp() {
+            console.log('=== APP INITIALIZATION START ===');
+            console.log('initializeApp called');
+
             updateTimerDisplay();
             updateDisplay();
             loadTargetRpm();
@@ -1256,16 +1403,25 @@
             }
             updatePowerControlDisplay();
 
+            console.log('Starting canvas initialization...');
             setTimeout(function() {
+                console.log('Initializing histogram canvas...');
                 initHistogramCanvas();
+                console.log('Initializing RPM chart...');
                 initRpmChart();
+                console.log('Canvas initialization complete');
             }, 200);
 
+            console.log('First status update...');
             updateStatus();
+            console.log('Setting initial power...');
             setPower(25);
 
+            console.log('Starting datetime updates...');
             updateDateTime();
             setInterval(updateDateTime, 1000);
+
+            console.log('=== APP INITIALIZATION COMPLETE ===');
         }
 
         // Démarrage
