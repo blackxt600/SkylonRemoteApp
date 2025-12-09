@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.2] - 2025-12-09
+
+### Changed
+- **Legacy version UI improvements for iPad** 📱
+  - **Power control buttons enlarged**: Width doubled from 40px to 80px for easier touch interaction
+  - Buttons changed from circular to rectangular with rounded corners (8px)
+  - Font size increased from 1.5em to 2em for better visibility
+  - Button spacing increased (gap: 12px → 15px, padding: 8px → 10px)
+  - **Date and time moved to center** of header for better visibility
+  - Header layout: empty spacer (left) - date/time (center) - connection status (right)
+
+### Fixed
+- **Perfect centering of + and − icons** in power buttons
+  - Removed flexbox in favor of traditional CSS (better old Safari compatibility)
+  - Used `line-height: 40px` (equal to button height) for vertical centering
+  - Added `padding: 0` to eliminate offset
+  - Set `font-family: Arial, sans-serif` for consistent rendering
+
+### Technical
+- Simplified CSS approach for better compatibility with iOS 8-10
+- Power buttons now use traditional centering instead of flexbox
+- Header uses flexbox with spacer for symmetric layout
+
 ## [2.4.1] - 2025-12-09
 
 ### Fixed

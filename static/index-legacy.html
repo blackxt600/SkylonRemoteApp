@@ -51,6 +51,11 @@
 
         .datetime {
             font-size: 0.9em;
+            text-align: center;
+            -webkit-box-flex: 1;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
         }
 
         .datetime-time {
@@ -73,6 +78,11 @@
             -ms-flex-align: center;
             align-items: center;
             gap: 8px;
+            min-width: 120px;
+        }
+
+        .header-spacer {
+            min-width: 120px;
         }
 
         .status-dot {
@@ -202,22 +212,26 @@
             -webkit-justify-content: center;
             -ms-flex-pack: center;
             justify-content: center;
-            gap: 12px;
-            padding: 8px;
+            gap: 15px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
         }
 
         .power-btn {
-            width: 40px;
+            width: 80px;
             height: 40px;
-            border-radius: 50%;
-            font-size: 1.5em;
+            padding: 0;
+            border-radius: 8px;
+            font-size: 2em;
+            line-height: 40px;
             background: #6366f1;
             color: white;
             border: none;
             cursor: pointer;
             font-weight: bold;
+            text-align: center;
+            font-family: Arial, sans-serif;
         }
 
         .power-btn:active {
@@ -496,6 +510,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
+            <div class="header-spacer"></div>
             <div class="datetime">
                 <div class="datetime-time" id="datetimeTime">00:00:00</div>
                 <div class="datetime-date" id="datetimeDate">-</div>
