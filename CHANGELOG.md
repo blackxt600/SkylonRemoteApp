@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.3] - 2025-12-12
+
+### Fixed
+- **Service installation script now uses absolute paths** 🔧
+  - Fixed `install-service.sh` to use absolute paths instead of systemd `%h` variable
+  - Resolves issue where service file called `/root/.cargo/bin/cargo` instead of user's cargo path
+  - Script now correctly detects and uses `$CURRENT_HOME/.cargo/bin/cargo` (e.g., `/home/skylon/.cargo/bin/cargo`)
+  - Added cargo path display in detected configuration output
+
+### Technical
+- Changed `WorkingDirectory` from `%h/Documents/SkylonRemoteApp` to `$PROJECT_DIR`
+- Changed `ExecStart` from `%h/.cargo/bin/cargo` to `$CURRENT_HOME/.cargo/bin/cargo`
+- Service file now generated with concrete paths for better compatibility
+
 ## [2.4.2] - 2025-12-09
 
 ### Changed

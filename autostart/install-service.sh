@@ -27,6 +27,7 @@ echo "Detected configuration:"
 echo "  User: $CURRENT_USER"
 echo "  Home: $CURRENT_HOME"
 echo "  Project: $PROJECT_DIR"
+echo "  Cargo: $CURRENT_HOME/.cargo/bin/cargo"
 echo ""
 
 # Check if cargo exists
@@ -51,8 +52,8 @@ Wants=bluetooth.target
 [Service]
 Type=simple
 User=$CURRENT_USER
-WorkingDirectory=%h/Documents/SkylonRemoteApp
-ExecStart=%h/.cargo/bin/cargo run --release
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$CURRENT_HOME/.cargo/bin/cargo run --release
 Restart=on-failure
 RestartSec=10
 
