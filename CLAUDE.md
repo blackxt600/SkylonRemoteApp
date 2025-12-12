@@ -202,14 +202,23 @@ The kdri library auto-detects device type and polls appropriate values (RPM, pow
 
 ## Deployment
 
+### Automated Setup Scripts
+
+- `autostart/install-service.sh` - Automatic systemd service installation with user detection
+- `autostart/setup-sudo-permissions.sh` - Automatic sudo configuration for shutdown/reboot
+
+### Configuration Files and Documentation
+
 For systemd auto-start configuration and log management, see:
 - `autostart/AUTOSTART_SETUP.md` - Complete installation and configuration guide
-- `autostart/skylon-remote.service` - Systemd service file (uses %h for portable paths)
+- `autostart/skylon-remote.service` - Systemd service file template
 - `autostart/journald-limit.conf` - Journald configuration to limit log size
 - `autostart/cleanup-logs.sh` - Manual/automated log cleanup script
 - `autostart/launch_terminal.sh` - Optional GUI terminal launch script
 
-For shutdown/reboot functionality, see `SYSTEM_SHUTDOWN_REBOOT.md` for detailed sudo configuration instructions to allow passwordless execution of `/sbin/shutdown` and `/sbin/reboot` for the user running the server.
+For shutdown/reboot functionality:
+- Quick setup: Run `autostart/setup-sudo-permissions.sh`
+- Manual setup: See `SYSTEM_SHUTDOWN_REBOOT.md` for detailed instructions
 
 ### Log Management (Important for Raspberry Pi)
 

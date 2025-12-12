@@ -4,12 +4,31 @@ This guide explains how to configure sudo permissions to allow the web interface
 
 ## 📋 Table of Contents
 
+- [Quick Setup (Automated)](#quick-setup-automated)
 - [Overview](#overview)
 - [Security Considerations](#security-considerations)
-- [Configuration Steps](#configuration-steps)
+- [Configuration Steps (Manual)](#configuration-steps-manual)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 - [Reverting Changes](#reverting-changes)
+
+## 🚀 Quick Setup (Automated)
+
+**Recommended method:** Use the automated setup script that configures everything for you.
+
+```bash
+cd ~/Documents/SkylonRemoteApp/autostart
+./setup-sudo-permissions.sh
+```
+
+The script will:
+- ✅ Automatically detect your username
+- ✅ Create the sudoers configuration file
+- ✅ Validate the syntax
+- ✅ Set correct permissions (0440)
+- ✅ Test the configuration
+
+If you prefer manual configuration or want to understand the process, see [Configuration Steps (Manual)](#configuration-steps-manual) below.
 
 ## 🔍 Overview
 
@@ -33,7 +52,7 @@ By default, these commands require root privileges. This guide shows how to conf
 3. **No wildcards**: Use exact command paths
 4. **Network security**: Ensure your Raspberry Pi is behind a firewall
 
-## ⚙️ Configuration Steps
+## ⚙️ Configuration Steps (Manual)
 
 ### Step 1: Identify the User
 
