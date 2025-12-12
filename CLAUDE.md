@@ -206,28 +206,37 @@ The kdri library auto-detects device type and polls appropriate values (RPM, pow
 
 - `autostart/install-service.sh` - Automatic systemd service installation with user detection
 - `autostart/setup-sudo-permissions.sh` - Automatic sudo configuration for shutdown/reboot
+- `autostart/setup-log-management.sh` - Automatic log management configuration
 
 ### Configuration Files and Documentation
 
-For systemd auto-start configuration and log management, see:
+For systemd auto-start configuration:
 - `autostart/AUTOSTART_SETUP.md` - Complete installation and configuration guide
 - `autostart/skylon-remote.service` - Systemd service file template
-- `autostart/journald-limit.conf` - Journald configuration to limit log size
-- `autostart/cleanup-logs.sh` - Manual/automated log cleanup script
 - `autostart/launch_terminal.sh` - Optional GUI terminal launch script
 
 For shutdown/reboot functionality:
 - Quick setup: Run `autostart/setup-sudo-permissions.sh`
 - Manual setup: See `SYSTEM_SHUTDOWN_REBOOT.md` for detailed instructions
 
+For log management:
+- Quick setup: Run `autostart/setup-log-management.sh`
+- Documentation: See `LOGS.md` for complete log management guide
+- Configuration files:
+  - `autostart/journald-limit.conf` - Journald size limits (50 MB max)
+  - `autostart/cleanup-logs.sh` - Manual cleanup script
+
 ### Log Management (Important for Raspberry Pi)
 
 The application outputs logs to stdout/stderr which are captured by systemd's journald. Without configuration, logs can grow to 200-300 MB and fill limited disk space on Raspberry Pi.
 
-**Recommended configuration:**
-- Use `autostart/journald-limit.conf` to limit journal size to 50 MB
-- Set up weekly log cleanup with `autostart/cleanup-logs.sh`
-- See `autostart/AUTOSTART_SETUP.md` for complete setup instructions
+**Quick setup (recommended):**
+```bash
+cd autostart
+./setup-log-management.sh
+```
+
+**Manual setup:** See `LOGS.md` for detailed instructions and troubleshooting.
 
 ## Versioning
 

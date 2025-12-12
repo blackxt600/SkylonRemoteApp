@@ -289,10 +289,12 @@ The code is here. The tools are available. The possibilities are endless. **What
 ## 📞 Support
 
 For questions or issues, see:
-- [CLAUDE.md](CLAUDE.md) for development instructions
-- [CHANGELOG.md](CHANGELOG.md) for version history
-- [autostart/GESTION_LOGS.md](autostart/GESTION_LOGS.md) for log management on Raspberry Pi
-- [SYSTEM_SHUTDOWN_REBOOT.md](SYSTEM_SHUTDOWN_REBOOT.md) for shutdown/reboot configuration
+- [CLAUDE.md](CLAUDE.md) - Development instructions and architecture
+- [CHANGELOG.md](CHANGELOG.md) - Version history and release notes
+- [LOGS.md](LOGS.md) - Log management guide for Raspberry Pi
+- [SYSTEM_SHUTDOWN_REBOOT.md](SYSTEM_SHUTDOWN_REBOOT.md) - Shutdown/reboot configuration
+- [MOCK_MODE.md](MOCK_MODE.md) - Development without Bluetooth hardware
+- [autostart/AUTOSTART_SETUP.md](autostart/AUTOSTART_SETUP.md) - Systemd service setup
 
 ---
 
